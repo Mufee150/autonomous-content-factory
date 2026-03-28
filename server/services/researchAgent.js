@@ -8,14 +8,90 @@ function getSectionValue(sourceText, sectionName) {
   return match ? match[1].trim() : "";
 }
 
+function toTitleCase(value) {
+  return value
+    .split(" ")
+    .filter(Boolean)
+    .map((word) => word[0].toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+}
+
+function inferTopic(sourceText) {
+  const patterns = [
+    /workshop\s+on\s+([a-z0-9\s-]+)/i,
+    /about\s+([a-z0-9\s-]+)/i,
+    /for\s+([a-z0-9\s-]+)/i
+  ];
+
+  for (const pattern of patterns) {
+    const match = sourceText.match(pattern);
+    if (match && match[1]) {
+      return match[1].replace(/[.,!?;:].*$/, "").trim();
+    }
+  }
+
+  return "";
+}
+
+function inferProductName(sourceText) {
+  const explicitProduct = getSectionValue(sourceText, "Product");
+  if (explicitProduct) {
+    return explicitProduct;
+  }
+
+  const topic = inferTopic(sourceText);
+  if (topic) {
+    if (/workshop/i.test(sourceText)) {
+      return `${toTitleCase(topic)} Workshop`;
+    }
+
+    return toTitleCase(topic);
+  }
+
+  return "Content Campaign";
+}
+
+function inferFeatures(sourceText, topic) {
+  const explicitFeatures = getSectionValue(sourceText, "Features");
+  if (explicitFeatures) {
+    return explicitFeatures
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  if (/workshop/i.test(sourceText)) {
+    return [
+      "Structured learning agenda",
+      "Hands-on practical exercises",
+      "Guided instruction and Q&A"
+    ];
+  }
+
+  if (topic) {
+    return [
+      `Focused coverage of ${topic}`,
+      "Clear learning flow",
+      "Actionable next steps"
+    ];
+  }
+
+  return [];
+}
+
 function buildFallbackMetaDocument(sourceText) {
-  const productName = getSectionValue(sourceText, "Product") || "Unknown Product";
-  const featuresRaw = getSectionValue(sourceText, "Features");
-  const features = featuresRaw
-    ? featuresRaw.split(",").map((item) => item.trim()).filter(Boolean)
-    : [];
-  const targetAudience = getSectionValue(sourceText, "Audience");
-  const valueProposition = getSectionValue(sourceText, "Value");
+  const topic = inferTopic(sourceText);
+  const productName = inferProductName(sourceText);
+  const features = inferFeatures(sourceText, topic);
+  const explicitAudience = getSectionValue(sourceText, "Audience");
+  const explicitValue = getSectionValue(sourceText, "Value");
+  const targetAudience =
+    explicitAudience || (topic ? `Learners interested in ${topic}` : "");
+  const valueProposition =
+    explicitValue ||
+    (topic
+      ? `Help learners build practical understanding of ${topic} quickly`
+      : "");
   const tone = getSectionValue(sourceText, "Tone") || "professional";
 
   const ambiguousPoints = [];
