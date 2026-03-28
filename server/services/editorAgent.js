@@ -25,22 +25,30 @@ function normalizeEditorResult(candidate) {
 }
 
 async function editorAgent(metaDocument, draftContent) {
-  const completion = await openai.responses.create({
-    model: "gpt-4.1-mini",
-    input: [
-      {
-        role: "system",
-        content: prompts.editorPrompt
-      },
-      {
-        role: "user",
-        content: JSON.stringify({
-          meta_document: metaDocument,
-          generated_content: draftContent
-        })
-      }
-    ]
-  });
+  let completion;
+  try {
+    completion = await openai.responses.create({
+      model: "gpt-4.1-mini",
+      input: [
+        {
+          role: "system",
+          content: prompts.editorPrompt
+        },
+        {
+          role: "user",
+          content: JSON.stringify({
+            meta_document: metaDocument,
+            generated_content: draftContent
+          })
+        }
+      ]
+    });
+  } catch (error) {
+    const apiError = new Error("OpenAI request failed in Editor Agent.");
+    apiError.statusCode = 502;
+    apiError.source = "editor-agent";
+    throw apiError;
+  }
 
   const rawText = (completion.output_text || "").trim();
 
@@ -48,7 +56,10 @@ async function editorAgent(metaDocument, draftContent) {
   try {
     parsed = JSON.parse(rawText);
   } catch (error) {
-    throw new Error("Editor agent returned invalid JSON.");
+    const parseError = new Error("Editor Agent returned invalid JSON.");
+    parseError.statusCode = 502;
+    parseError.source = "editor-agent";
+    throw parseError;
   }
 
   return normalizeEditorResult(parsed);

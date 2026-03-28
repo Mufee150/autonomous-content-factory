@@ -15,19 +15,27 @@ function normalizeDraft(candidate) {
 }
 
 async function copywriterAgent(metaDocument) {
-  const completion = await openai.responses.create({
-    model: "gpt-4.1-mini",
-    input: [
-      {
-        role: "system",
-        content: prompts.copywriterPrompt
-      },
-      {
-        role: "user",
-        content: JSON.stringify(metaDocument)
-      }
-    ]
-  });
+  let completion;
+  try {
+    completion = await openai.responses.create({
+      model: "gpt-4.1-mini",
+      input: [
+        {
+          role: "system",
+          content: prompts.copywriterPrompt
+        },
+        {
+          role: "user",
+          content: JSON.stringify(metaDocument)
+        }
+      ]
+    });
+  } catch (error) {
+    const apiError = new Error("OpenAI request failed in Copywriter Agent.");
+    apiError.statusCode = 502;
+    apiError.source = "copywriter-agent";
+    throw apiError;
+  }
 
   const rawText = (completion.output_text || "").trim();
 
@@ -35,7 +43,10 @@ async function copywriterAgent(metaDocument) {
   try {
     parsed = JSON.parse(rawText);
   } catch (error) {
-    throw new Error("Copywriter agent returned invalid JSON.");
+    const parseError = new Error("Copywriter Agent returned invalid JSON.");
+    parseError.statusCode = 502;
+    parseError.source = "copywriter-agent";
+    throw parseError;
   }
 
   return normalizeDraft(parsed);

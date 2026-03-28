@@ -25,19 +25,27 @@ function normalizeMetaDocument(candidate) {
 }
 
 async function researchAgent(sourceText) {
-  const completion = await openai.responses.create({
-    model: "gpt-4.1-mini",
-    input: [
-      {
-        role: "system",
-        content: prompts.researchPrompt
-      },
-      {
-        role: "user",
-        content: sourceText
-      }
-    ]
-  });
+  let completion;
+  try {
+    completion = await openai.responses.create({
+      model: "gpt-4.1-mini",
+      input: [
+        {
+          role: "system",
+          content: prompts.researchPrompt
+        },
+        {
+          role: "user",
+          content: sourceText
+        }
+      ]
+    });
+  } catch (error) {
+    const apiError = new Error("OpenAI request failed in Research Agent.");
+    apiError.statusCode = 502;
+    apiError.source = "research-agent";
+    throw apiError;
+  }
 
   const rawText = (completion.output_text || "").trim();
 
@@ -45,7 +53,10 @@ async function researchAgent(sourceText) {
   try {
     parsed = JSON.parse(rawText);
   } catch (error) {
-    throw new Error("Research agent returned invalid JSON.");
+    const parseError = new Error("Research Agent returned invalid JSON.");
+    parseError.statusCode = 502;
+    parseError.source = "research-agent";
+    throw parseError;
   }
 
   const safeMetaDocument = normalizeMetaDocument(parsed);
