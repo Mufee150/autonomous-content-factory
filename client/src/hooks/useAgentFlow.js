@@ -8,14 +8,26 @@ export default function useAgentFlow() {
 
   async function runPipeline(sourceText) {
     setStatus("researching");
+    setResult(null);
     setError("");
 
     try {
-      const response = await api.post("/create-content", {
+      const analyzeResponse = await api.post("/analyze", {
         source_text: sourceText
       });
 
-      setResult(response.data.data);
+      const metaDocument = analyzeResponse.data.data;
+
+      setStatus("generating");
+
+      const generateResponse = await api.post("/generate", {
+        meta_document: metaDocument
+      });
+
+      setResult({
+        meta_document: metaDocument,
+        content: generateResponse.data.data
+      });
       setStatus("completed");
     } catch (requestError) {
       const message =

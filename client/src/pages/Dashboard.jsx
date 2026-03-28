@@ -5,7 +5,7 @@ import useAgentFlow from "../hooks/useAgentFlow";
 
 export default function Dashboard() {
   const { status, result, error, runPipeline } = useAgentFlow();
-  const isLoading = status === "researching";
+  const isLoading = status === "researching" || status === "generating";
 
   return (
     <main>

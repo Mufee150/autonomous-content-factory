@@ -59,6 +59,50 @@ button:disabled {
   cursor: not-allowed;
 }
 
+.tab-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.tab {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+.tab.active {
+  background: #1d4ed8;
+  color: #ffffff;
+}
+
+.secondary-btn {
+  margin-bottom: 0.5rem;
+  background: #0f766e;
+}
+
+.copy-hint {
+  min-height: 1.2rem;
+  color: #0f766e;
+  font-size: 0.9rem;
+  margin-top: 0;
+}
+
+.status-steps {
+  margin: 0.75rem 0 0;
+  padding-left: 1.2rem;
+}
+
+.status-steps li {
+  color: #6b7280;
+  margin-bottom: 0.35rem;
+}
+
+.status-steps li.done {
+  color: #0f766e;
+  font-weight: 600;
+}
+
 pre {
   background: #f9fafb;
   border: 1px solid #e5e7eb;
