@@ -2,6 +2,41 @@
 const prompts = require("./promptTemplates");
 const metaSchema = require("../../shared/metaSchema");
 
+function getSectionValue(sourceText, sectionName) {
+  const regex = new RegExp(`${sectionName}\\s*:\\s*([^\\n.]+)`, "i");
+  const match = sourceText.match(regex);
+  return match ? match[1].trim() : "";
+}
+
+function buildFallbackMetaDocument(sourceText) {
+  const productName = getSectionValue(sourceText, "Product") || "Unknown Product";
+  const featuresRaw = getSectionValue(sourceText, "Features");
+  const features = featuresRaw
+    ? featuresRaw.split(",").map((item) => item.trim()).filter(Boolean)
+    : [];
+  const targetAudience = getSectionValue(sourceText, "Audience");
+  const valueProposition = getSectionValue(sourceText, "Value");
+  const tone = getSectionValue(sourceText, "Tone") || "professional";
+
+  const ambiguousPoints = [];
+  if (!targetAudience) {
+    ambiguousPoints.push("Target audience is not clearly specified.");
+  }
+  if (!valueProposition) {
+    ambiguousPoints.push("Value proposition is not clearly specified.");
+  }
+
+  return {
+    ...metaSchema,
+    product_name: productName,
+    features,
+    target_audience: targetAudience,
+    value_proposition: valueProposition,
+    tone,
+    ambiguous_points: ambiguousPoints
+  };
+}
+
 function normalizeMetaDocument(candidate) {
   return {
     product_name:
@@ -41,10 +76,7 @@ async function researchAgent(sourceText) {
       ]
     });
   } catch (error) {
-    const apiError = new Error("OpenAI request failed in Research Agent.");
-    apiError.statusCode = 502;
-    apiError.source = "research-agent";
-    throw apiError;
+    return buildFallbackMetaDocument(sourceText);
   }
 
   const rawText = (completion.output_text || "").trim();

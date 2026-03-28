@@ -10,8 +10,13 @@ export default function Dashboard() {
   const isLoading = status === "researching" || status === "generating";
 
   return (
-    <main>
-      <h1>Dashboard</h1>
+    <main className="page-shell">
+      <section className="dashboard-header card">
+        <h1>Content Dashboard</h1>
+        <p>
+          Paste your source document, run the pipeline, and review generated outputs.
+        </p>
+      </section>
       <UploadBox onSubmit={runPipeline} isLoading={isLoading} />
       <AgentStatus status={status} />
       <HistoryPanel history={history} onSelect={selectHistoryItem} />
