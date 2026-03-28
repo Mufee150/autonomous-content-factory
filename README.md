@@ -32,6 +32,54 @@ npm run dev
 2. Copywriter Agent drafts content.
 3. Editor Agent refines and formats final output.
 
+## Backend API
+
+### POST /analyze
+
+Converts source text into a Meta Document.
+
+Request body:
+
+```json
+{
+	"source_text": "Your source document text here"
+}
+```
+
+### POST /generate
+
+Generates and validates content from a Meta Document.
+
+Request body:
+
+```json
+{
+	"meta_document": {
+		"product_name": "",
+		"features": [],
+		"target_audience": "",
+		"value_proposition": "",
+		"tone": "",
+		"ambiguous_points": []
+	}
+}
+```
+
+### POST /create-content
+
+Runs the full pipeline in one call:
+1) source text -> Meta Document
+2) Meta Document -> generated content
+3) Editor validation
+
+Request body:
+
+```json
+{
+	"source_text": "Your source document text here"
+}
+```
+
 ## Environment
 
 Create/update `.env` with:
