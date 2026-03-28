@@ -1,25 +1,9 @@
-﻿const express = require("express");
-const cors = require("cors");
-const dotenv = require("dotenv");
-const contentRoutes = require("./routes/contentRoutes");
-const requestLogger = require("./middleware/requestLogger");
-const errorHandler = require("./middleware/errorHandler");
+﻿const dotenv = require("dotenv");
+const app = require("./app");
 
 dotenv.config();
 
-const app = express();
 const port = process.env.PORT || 5000;
-
-app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:5173" }));
-app.use(express.json());
-app.use(requestLogger);
-
-app.get("/health", (req, res) => {
-  res.json({ ok: true });
-});
-
-app.use("/", contentRoutes);
-app.use(errorHandler);
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);

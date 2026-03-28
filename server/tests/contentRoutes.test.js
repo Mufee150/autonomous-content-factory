@@ -1,0 +1,110 @@
+const request = require("supertest");
+
+jest.mock("../services/researchAgent", () => jest.fn());
+jest.mock("../services/copywriterAgent", () => jest.fn());
+jest.mock("../services/editorAgent", () => jest.fn());
+
+const researchAgent = require("../services/researchAgent");
+const copywriterAgent = require("../services/copywriterAgent");
+const editorAgent = require("../services/editorAgent");
+const app = require("../app");
+
+describe("Content Routes", () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test("POST /analyze returns meta document", async () => {
+    researchAgent.mockResolvedValue({
+      product_name: "Autonomous Content Factory",
+      features: ["Multi-agent workflow"],
+      target_audience: "Marketing teams",
+      value_proposition: "Faster campaign creation",
+      tone: "professional",
+      ambiguous_points: []
+    });
+
+    const response = await request(app)
+      .post("/analyze")
+      .send({ source_text: "Sample product description" });
+
+    expect(response.status).toBe(200);
+    expect(response.body.success).toBe(true);
+    expect(response.body.data.product_name).toBe("Autonomous Content Factory");
+  });
+
+  test("POST /generate returns validated content", async () => {
+    copywriterAgent.mockResolvedValue({
+      blog_post: "Draft blog",
+      social_thread: ["1", "2", "3", "4", "5"],
+      email_teaser: "Draft teaser"
+    });
+
+    editorAgent.mockResolvedValue({
+      blog_post: "Final blog",
+      social_thread: ["A", "B", "C", "D", "E"],
+      email_teaser: "Final teaser",
+      validation_report: {
+        hallucination_detected: false,
+        tone_consistent: true,
+        aligned_with_meta_document: true,
+        notes: []
+      }
+    });
+
+    const response = await request(app)
+      .post("/generate")
+      .send({
+        meta_document: {
+          product_name: "ACF",
+          features: ["f1"],
+          target_audience: "teams",
+          value_proposition: "value",
+          tone: "professional",
+          ambiguous_points: []
+        }
+      });
+
+    expect(response.status).toBe(200);
+    expect(response.body.success).toBe(true);
+    expect(response.body.data.validation_report.tone_consistent).toBe(true);
+  });
+
+  test("POST /create-content runs full pipeline", async () => {
+    researchAgent.mockResolvedValue({
+      product_name: "ACF",
+      features: ["f1"],
+      target_audience: "teams",
+      value_proposition: "value",
+      tone: "professional",
+      ambiguous_points: []
+    });
+
+    copywriterAgent.mockResolvedValue({
+      blog_post: "Draft blog",
+      social_thread: ["1", "2", "3", "4", "5"],
+      email_teaser: "Draft teaser"
+    });
+
+    editorAgent.mockResolvedValue({
+      blog_post: "Final blog",
+      social_thread: ["A", "B", "C", "D", "E"],
+      email_teaser: "Final teaser",
+      validation_report: {
+        hallucination_detected: false,
+        tone_consistent: true,
+        aligned_with_meta_document: true,
+        notes: []
+      }
+    });
+
+    const response = await request(app)
+      .post("/create-content")
+      .send({ source_text: "Sample input" });
+
+    expect(response.status).toBe(200);
+    expect(response.body.success).toBe(true);
+    expect(response.body.data.meta_document.product_name).toBe("ACF");
+    expect(response.body.data.content.blog_post).toBe("Final blog");
+  });
+});
