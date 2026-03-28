@@ -4,14 +4,15 @@ import OutputDisplay from "../components/OutputDisplay";
 import useAgentFlow from "../hooks/useAgentFlow";
 
 export default function Dashboard() {
-  const { status, output } = useAgentFlow();
+  const { status, result, error, runPipeline } = useAgentFlow();
+  const isLoading = status === "researching";
 
   return (
     <main>
       <h1>Dashboard</h1>
-      <UploadBox />
+      <UploadBox onSubmit={runPipeline} isLoading={isLoading} />
       <AgentStatus status={status} />
-      <OutputDisplay output={output} />
+      <OutputDisplay result={result} error={error} />
     </main>
   );
 }
