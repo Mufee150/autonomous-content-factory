@@ -49,11 +49,12 @@ describe("Content Routes", () => {
       linkedin_post: "Final linkedin",
       twitter_thread: ["A", "B", "C", "D", "E"],
       email_teaser: "Final teaser",
-      validation_report: {
-        hallucination_detected: false,
-        tone_consistent: true,
-        aligned_with_meta_document: true,
-        notes: []
+      editor_review: {
+        status: "APPROVED",
+        hallucinations_found: [],
+        tone_issues: [],
+        missing_alignment: [],
+        suggested_fixes: []
       }
     });
 
@@ -75,7 +76,7 @@ describe("Content Routes", () => {
 
     expect(response.status).toBe(200);
     expect(response.body.success).toBe(true);
-    expect(response.body.data.validation_report.tone_consistent).toBe(true);
+    expect(response.body.data.editor_review.status).toBe("APPROVED");
   });
 
   test("POST /create-content runs full pipeline", async () => {
@@ -103,11 +104,12 @@ describe("Content Routes", () => {
       linkedin_post: "Final linkedin",
       twitter_thread: ["A", "B", "C", "D", "E"],
       email_teaser: "Final teaser",
-      validation_report: {
-        hallucination_detected: false,
-        tone_consistent: true,
-        aligned_with_meta_document: true,
-        notes: []
+      editor_review: {
+        status: "APPROVED",
+        hallucinations_found: [],
+        tone_issues: [],
+        missing_alignment: [],
+        suggested_fixes: []
       }
     });
 

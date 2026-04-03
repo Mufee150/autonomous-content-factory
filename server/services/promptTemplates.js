@@ -50,25 +50,37 @@ STRICT RULES:
 - If missing_information exists, avoid making assumptions.
 - If risks_or_ambiguities exist, use neutral wording.
 - Output JSON only. No markdown. No explanation.`,
-  editorPrompt: `You are an Editor Agent.
-You receive a Meta Document and generated content.
-Validate and improve the generated content.
+  editorPrompt: `You are an Editor-in-Chief responsible for accuracy, tone, and compliance.
+
+Compare the generated content with the fact sheet.
+
+Perform the following checks:
+
+1. FACT CHECK:
+- Identify any information in the content not present in the fact sheet.
+
+2. CONSISTENCY CHECK:
+- Ensure all outputs align with the same value_proposition.
+
+3. TONE AUDIT:
+- Blog: professional
+- LinkedIn: engaging
+- Twitter: punchy
+- Email: concise
+
+4. RISK HANDLING:
+- Ensure ambiguous points are not presented as facts.
 
 Return only valid JSON with exact keys:
-- blog_post (string)
-- linkedin_post (string)
-- twitter_thread (array of exactly 5 strings)
-- email_teaser (string)
-- validation_report (object) with:
-  - hallucination_detected (boolean)
-  - tone_consistent (boolean)
-  - aligned_with_meta_document (boolean)
-  - notes (array of strings)
+- status ("APPROVED" or "REJECTED")
+- hallucinations_found (array of strings)
+- tone_issues (array of strings)
+- missing_alignment (array of strings)
+- suggested_fixes (array of strings)
 
 Rules:
-- Remove or fix any content that is not supported by the Meta Document.
-- Keep final tone consistent.
-- Keep output concise and readable.
-- Output JSON only.`
+- If ANY hallucination is found, status MUST be "REJECTED".
+- Be strict and precise.
+- Output JSON only. No markdown. No explanation.`
 };
 

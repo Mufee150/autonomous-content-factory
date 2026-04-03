@@ -35,6 +35,7 @@ export default function OutputDisplay({ result, error }) {
   }
 
   const { meta_document: metaDocument, content } = result;
+  const review = content.editor_review || content.validation_report || {};
 
   const threadItems = content.twitter_thread || content.social_thread || [];
 
@@ -168,17 +169,17 @@ export default function OutputDisplay({ result, error }) {
 
       {activeTab === "validation" && (
         <div>
-          <h4>Validation Report</h4>
+          <h4>Editorial Audit</h4>
           <button
             type="button"
             className="secondary-btn"
             onClick={() =>
-              copyText(JSON.stringify(content.validation_report, null, 2), "Validation")
+              copyText(JSON.stringify(review, null, 2), "Validation")
             }
           >
             Copy
           </button>
-          <pre>{JSON.stringify(content.validation_report, null, 2)}</pre>
+          <pre>{JSON.stringify(review, null, 2)}</pre>
         </div>
       )}
     </section>

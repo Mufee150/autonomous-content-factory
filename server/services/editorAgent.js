@@ -1,42 +1,78 @@
 ﻿const openai = require("../config/openai");
 const prompts = require("./promptTemplates");
 
-function buildFallbackEditorResult(draftContent) {
+function buildFallbackEditorResult(metaDocument, draftContent) {
+  const riskyClaims = (metaDocument.risks_or_ambiguities || []).length
+    ? [
+        "Content was generated while fact sheet includes ambiguities. Review wording before publishing."
+      ]
+    : [];
+
+  const status = riskyClaims.length ? "REJECTED" : "APPROVED";
+
+  const review = {
+    status,
+    hallucinations_found: [],
+    tone_issues: [],
+    missing_alignment: [],
+    suggested_fixes: [
+      "Generated in local fallback mode because OpenAI service was unavailable.",
+      ...riskyClaims
+    ]
+  };
+
   return {
     ...draftContent,
-    validation_report: {
-      hallucination_detected: false,
-      tone_consistent: true,
-      aligned_with_meta_document: true,
-      notes: [
-        "Generated in local fallback mode because OpenAI service was unavailable."
-      ]
-    }
+    editor_review: review,
+    validation_report: review
   };
 }
 
-function normalizeEditorResult(candidate) {
-  const report = candidate.validation_report || {};
+function normalizeReview(candidate) {
+  const status =
+    typeof candidate.status === "string"
+      ? candidate.status.toUpperCase()
+      : "APPROVED";
+
+  const hallucinationsFound = Array.isArray(candidate.hallucinations_found)
+    ? candidate.hallucinations_found.filter((item) => typeof item === "string")
+    : [];
+
+  const toneIssues = Array.isArray(candidate.tone_issues)
+    ? candidate.tone_issues.filter((item) => typeof item === "string")
+    : [];
+
+  const missingAlignment = Array.isArray(candidate.missing_alignment)
+    ? candidate.missing_alignment.filter((item) => typeof item === "string")
+    : [];
+
+  const suggestedFixes = Array.isArray(candidate.suggested_fixes)
+    ? candidate.suggested_fixes.filter((item) => typeof item === "string")
+    : [];
+
+  const forcedStatus = hallucinationsFound.length ? "REJECTED" : status;
 
   return {
-    blog_post: typeof candidate.blog_post === "string" ? candidate.blog_post : "",
+    status: forcedStatus === "REJECTED" ? "REJECTED" : "APPROVED",
+    hallucinations_found: hallucinationsFound,
+    tone_issues: toneIssues,
+    missing_alignment: missingAlignment,
+    suggested_fixes: suggestedFixes
+  };
+}
+
+function normalizeEditorResult(draftContent, review) {
+  return {
+    blog_post: typeof draftContent.blog_post === "string" ? draftContent.blog_post : "",
     linkedin_post:
-      typeof candidate.linkedin_post === "string" ? candidate.linkedin_post : "",
-    twitter_thread: Array.isArray(candidate.twitter_thread)
-      ? candidate.twitter_thread
-          .filter((item) => typeof item === "string")
-          .slice(0, 5)
+      typeof draftContent.linkedin_post === "string" ? draftContent.linkedin_post : "",
+    twitter_thread: Array.isArray(draftContent.twitter_thread)
+      ? draftContent.twitter_thread.filter((item) => typeof item === "string").slice(0, 5)
       : [],
     email_teaser:
-      typeof candidate.email_teaser === "string" ? candidate.email_teaser : "",
-    validation_report: {
-      hallucination_detected: Boolean(report.hallucination_detected),
-      tone_consistent: Boolean(report.tone_consistent),
-      aligned_with_meta_document: Boolean(report.aligned_with_meta_document),
-      notes: Array.isArray(report.notes)
-        ? report.notes.filter((item) => typeof item === "string")
-        : []
-    }
+      typeof draftContent.email_teaser === "string" ? draftContent.email_teaser : "",
+    editor_review: review,
+    validation_report: review
   };
 }
 
@@ -53,14 +89,14 @@ async function editorAgent(metaDocument, draftContent) {
         {
           role: "user",
           content: JSON.stringify({
-            meta_document: metaDocument,
+            fact_sheet: metaDocument,
             generated_content: draftContent
           })
         }
       ]
     });
   } catch (error) {
-    return buildFallbackEditorResult(draftContent);
+    return buildFallbackEditorResult(metaDocument, draftContent);
   }
 
   const rawText = (completion.output_text || "").trim();
@@ -75,7 +111,9 @@ async function editorAgent(metaDocument, draftContent) {
     throw parseError;
   }
 
-  return normalizeEditorResult(parsed);
+  const review = normalizeReview(parsed);
+
+  return normalizeEditorResult(draftContent, review);
 }
 
 module.exports = editorAgent;
