@@ -3,10 +3,12 @@ const request = require("supertest");
 jest.mock("../services/researchAgent", () => jest.fn());
 jest.mock("../services/copywriterAgent", () => jest.fn());
 jest.mock("../services/editorAgent", () => jest.fn());
+jest.mock("../services/regenerationAgent", () => jest.fn());
 
 const researchAgent = require("../services/researchAgent");
 const copywriterAgent = require("../services/copywriterAgent");
 const editorAgent = require("../services/editorAgent");
+const regenerationAgent = require("../services/regenerationAgent");
 const app = require("../app");
 
 describe("Content Routes", () => {
@@ -121,5 +123,71 @@ describe("Content Routes", () => {
     expect(response.body.success).toBe(true);
     expect(response.body.data.meta_document.product_name).toBe("ACF");
     expect(response.body.data.content.blog_post).toBe("Final blog");
+  });
+
+  test("POST /generate self-corrects when editor rejects", async () => {
+    copywriterAgent.mockResolvedValue({
+      blog_post: "Draft blog",
+      linkedin_post: "Draft linkedin",
+      twitter_thread: ["1", "2", "3", "4", "5"],
+      email_teaser: "Draft teaser"
+    });
+
+    editorAgent
+      .mockResolvedValueOnce({
+        blog_post: "Draft blog",
+        linkedin_post: "Draft linkedin",
+        twitter_thread: ["1", "2", "3", "4", "5"],
+        email_teaser: "Draft teaser",
+        editor_review: {
+          status: "REJECTED",
+          hallucinations_found: ["Unverified claim in blog"],
+          tone_issues: [],
+          missing_alignment: [],
+          suggested_fixes: ["Remove unsupported statement"]
+        }
+      })
+      .mockResolvedValueOnce({
+        blog_post: "Corrected blog",
+        linkedin_post: "Corrected linkedin",
+        twitter_thread: ["A", "B", "C", "D", "E"],
+        email_teaser: "Corrected teaser",
+        editor_review: {
+          status: "APPROVED",
+          hallucinations_found: [],
+          tone_issues: [],
+          missing_alignment: [],
+          suggested_fixes: []
+        }
+      });
+
+    regenerationAgent.mockResolvedValue({
+      blog_post: "Corrected draft blog",
+      linkedin_post: "Corrected draft linkedin",
+      twitter_thread: ["A", "B", "C", "D", "E"],
+      email_teaser: "Corrected draft teaser"
+    });
+
+    const response = await request(app)
+      .post("/generate")
+      .send({
+        meta_document: {
+          product_name: "ACF",
+          target_audience: "teams",
+          key_features: ["f1"],
+          value_proposition: "value",
+          supporting_points: ["s1"],
+          tone_detected: "professional",
+          constraints: [],
+          risks_or_ambiguities: [],
+          missing_information: []
+        }
+      });
+
+    expect(response.status).toBe(200);
+    expect(response.body.success).toBe(true);
+    expect(response.body.data.editor_review.status).toBe("APPROVED");
+    expect(response.body.data.regeneration_applied).toBe(true);
+    expect(regenerationAgent).toHaveBeenCalledTimes(1);
   });
 });

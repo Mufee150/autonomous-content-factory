@@ -82,5 +82,27 @@ Rules:
 - If ANY hallucination is found, status MUST be "REJECTED".
 - Be strict and precise.
 - Output JSON only. No markdown. No explanation.`
+  ,
+  regenerationPrompt: `You are revising content based on editor feedback.
+
+Fix ONLY the issues mentioned below without changing correct sections.
+
+Editor Feedback:
+{EDITOR_OUTPUT}
+
+Original Content:
+{CONTENT}
+
+Return corrected version as strict JSON with exact keys:
+- blog_post (string)
+- linkedin_post (string)
+- twitter_thread (array of exactly 5 strings)
+- email_teaser (string)
+
+Rules:
+- Preserve all factually correct sections.
+- Do not introduce any new facts.
+- Keep revisions scoped to the feedback.
+- Output JSON only. No markdown. No explanation.`
 };
 
