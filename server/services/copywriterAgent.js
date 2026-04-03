@@ -2,62 +2,87 @@
 const prompts = require("./promptTemplates");
 
 function buildFallbackDraft(metaDocument) {
-  const productName = metaDocument.product_name || "the product";
-  const features = (metaDocument.key_features || []).join(", ") || "its core capabilities";
-  const audience = metaDocument.target_audience || "your target audience";
+  const productName = metaDocument.product_name || "This offering";
+  const audience = metaDocument.target_audience || "the target audience";
   const value =
-    metaDocument.value_proposition || "delivering clear and practical value";
+    metaDocument.value_proposition ||
+    "provide clear, practical value based on the fact sheet";
+  const features = (metaDocument.key_features || []).join(", ");
+  const supportingPoints = (metaDocument.supporting_points || []).join("; ");
+  const constraints = (metaDocument.constraints || []).join(", ");
+  const risks = (metaDocument.risks_or_ambiguities || []).join("; ");
+  const missingInfo = (metaDocument.missing_information || []).join(", ");
 
-  const isWorkshop = /workshop|bootcamp|training|course/i.test(productName);
+  const neutralLine = risks
+    ? `Some details remain unclear (${risks}), so this messaging uses neutral wording.`
+    : "All available claims are limited to the provided fact sheet.";
 
-  if (isWorkshop) {
-    return {
-      blog_post: `${productName} is built for ${audience} who want practical results, not just theory. The core value is simple: ${value}. In many learning programs, people leave motivated but unsure about what to do next. This workshop model solves that by giving participants a structured path from basics to application.
+  const missingLine = missingInfo
+    ? `Some marketing details are missing (${missingInfo}), so assumptions are intentionally avoided.`
+    : "No missing critical marketing fields were flagged in the fact sheet.";
 
-The workshop flow is anchored around ${features}. Instead of presenting disconnected ideas, each segment builds on the previous one. Participants first understand key concepts, then see guided examples, and finally apply what they learned through focused activities. This layered format helps learners retain information faster and with greater confidence.
+  const featureLine = features
+    ? `Key features mentioned are ${features}.`
+    : "The fact sheet does not list explicit key features.";
 
-Another advantage is clarity of outcomes. A strong workshop does not measure success by attendance alone. It measures success by whether participants can apply the skill in real scenarios. With ${productName}, each learning block is designed to produce an observable outcome, such as solving a practical task, explaining a concept clearly, or completing a guided mini project.
+  const supportLine = supportingPoints
+    ? `Supporting points include ${supportingPoints}.`
+    : "No explicit supporting points were provided in the fact sheet.";
 
-For instructors and organizers, this structure also improves delivery consistency. Session quality becomes repeatable across batches because the agenda, exercises, and checkpoints are aligned. That means less drift in quality and a smoother learner experience.
-
-The result is a workshop experience that feels purposeful from start to finish. Learners know what they are learning, why it matters, and how to apply it. If the goal is to help ${audience} build confidence quickly and move toward real-world usage, ${productName} provides a practical and reliable format to achieve that goal.`,
-      social_thread: [
-        `${productName}: a practical format for ${audience}.`,
-        `Why it works: ${value}. The focus is on real application, not passive listening.`,
-        `Key workshop elements: ${features}.`,
-        `Participants progress through concept -> guided example -> hands-on activity.`,
-        `Outcome: stronger confidence, clearer understanding, and immediate next steps.`
-      ],
-      email_teaser: `${productName} helps ${audience} quickly build practical skills with a clear structure, guided exercises, and real application. If you want a workshop that turns learning into action, this is the right format.`
-    };
-  }
+  const constraintLine = constraints
+    ? `Noted constraints: ${constraints}.`
+    : "No explicit constraints were provided.";
 
   return {
-    blog_post: `${productName} is designed for ${audience}. Its main goal is to ${value}. In practical terms, this means participants or readers get a clear path from first exposure to confident execution.
+    blog_post: `Introduction:
+${productName} is positioned for ${audience}, with a central value proposition: ${value}. This article is based strictly on the provided fact sheet and avoids assumptions beyond those documented facts.
 
-The experience is built around ${features}. These elements work together to keep learning focused, reduce confusion, and provide momentum from one section to the next. Instead of scattered information, the structure gives people a reliable sequence they can follow.
+Body:
+${featureLine} ${supportLine} ${constraintLine}
 
-One of the biggest strengths of ${productName} is clarity. Each section is planned to connect directly to outcomes that matter. People do not just consume information, they understand how to apply it.
+To keep content reliable across channels, the messaging focuses on one clear throughline: ${value}. This creates consistency between long-form and short-form formats while preventing drift in claims.
 
-For teams and organizers, this also improves consistency. Messaging remains aligned, expectations are transparent, and delivery quality becomes easier to maintain. Over time, this creates better engagement and stronger trust in the program.
+${neutralLine} ${missingLine}
 
-If your objective is to help ${audience} gain confidence quickly, ${productName} provides a practical and repeatable format that supports that outcome.`,
-    social_thread: [
-      `${productName} in one line: ${value}.`,
-      `Built for ${audience}.`,
-      `Core features: ${features}.`,
-      `Why it matters: clear process, better consistency, faster execution.`,
-      `Result: more quality output with less manual effort.`
+From a strategy perspective, the fact sheet provides a usable foundation for professional campaign messaging. The most dependable angle is to reinforce audience relevance (${audience}) and repeat the same value proposition without introducing unverified detail. Where specifics are absent, communication should stay precise and transparent rather than speculative.
+
+This approach supports trust, reduces factual risk, and creates a repeatable structure for multi-platform publishing. The result is content that remains consistent, controlled, and aligned with source data.
+
+Conclusion:
+For this campaign, the strongest message remains ${value}. Repeating this proposition across blog, LinkedIn, Twitter, and email ensures alignment and clarity while keeping every statement grounded in the fact sheet.`,
+    linkedin_post: `${productName} is built for ${audience} with a clear promise: ${value}.
+
+${featureLine}
+${supportLine}
+
+${neutralLine}
+${missingLine}
+
+The focus here is disciplined messaging based only on verified source information.`,
+    twitter_thread: [
+      `${productName}: built for ${audience}. Core value -> ${value}.`,
+      features
+        ? `Key features from the fact sheet: ${features}.`
+        : "No explicit key features were listed in the fact sheet.",
+      supportingPoints
+        ? `Supporting points: ${supportingPoints}.`
+        : "No explicit supporting points were provided.",
+      constraints
+        ? `Constraints to respect: ${constraints}.`
+        : "No explicit constraints were listed.",
+      `${neutralLine} ${missingLine}`
     ],
-    email_teaser: `${productName} gives ${audience} a faster way to turn one source document into clear, consistent campaign content with ${value}.`
+    email_teaser: `${productName} for ${audience}: ${value}. This message is based strictly on verified source details, with neutral wording where information is unclear.`
   };
 }
 
 function normalizeDraft(candidate) {
   return {
     blog_post: typeof candidate.blog_post === "string" ? candidate.blog_post : "",
-    social_thread: Array.isArray(candidate.social_thread)
-      ? candidate.social_thread
+    linkedin_post:
+      typeof candidate.linkedin_post === "string" ? candidate.linkedin_post : "",
+    twitter_thread: Array.isArray(candidate.twitter_thread)
+      ? candidate.twitter_thread
           .filter((item) => typeof item === "string")
           .slice(0, 5)
       : [],
@@ -78,7 +103,7 @@ async function copywriterAgent(metaDocument) {
         },
         {
           role: "user",
-          content: JSON.stringify(metaDocument)
+          content: `Fact Sheet:\n${JSON.stringify(metaDocument, null, 2)}`
         }
       ]
     });

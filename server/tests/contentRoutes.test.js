@@ -17,11 +17,14 @@ describe("Content Routes", () => {
   test("POST /analyze returns meta document", async () => {
     researchAgent.mockResolvedValue({
       product_name: "Autonomous Content Factory",
-      features: ["Multi-agent workflow"],
       target_audience: "Marketing teams",
+      key_features: ["Multi-agent workflow"],
       value_proposition: "Faster campaign creation",
-      tone: "professional",
-      ambiguous_points: []
+      supporting_points: ["Source-driven workflow"],
+      tone_detected: "professional",
+      constraints: [],
+      risks_or_ambiguities: [],
+      missing_information: []
     });
 
     const response = await request(app)
@@ -36,13 +39,15 @@ describe("Content Routes", () => {
   test("POST /generate returns validated content", async () => {
     copywriterAgent.mockResolvedValue({
       blog_post: "Draft blog",
-      social_thread: ["1", "2", "3", "4", "5"],
+      linkedin_post: "Draft linkedin",
+      twitter_thread: ["1", "2", "3", "4", "5"],
       email_teaser: "Draft teaser"
     });
 
     editorAgent.mockResolvedValue({
       blog_post: "Final blog",
-      social_thread: ["A", "B", "C", "D", "E"],
+      linkedin_post: "Final linkedin",
+      twitter_thread: ["A", "B", "C", "D", "E"],
       email_teaser: "Final teaser",
       validation_report: {
         hallucination_detected: false,
@@ -57,11 +62,14 @@ describe("Content Routes", () => {
       .send({
         meta_document: {
           product_name: "ACF",
-          features: ["f1"],
           target_audience: "teams",
+          key_features: ["f1"],
           value_proposition: "value",
-          tone: "professional",
-          ambiguous_points: []
+          supporting_points: ["s1"],
+          tone_detected: "professional",
+          constraints: [],
+          risks_or_ambiguities: [],
+          missing_information: []
         }
       });
 
@@ -73,22 +81,27 @@ describe("Content Routes", () => {
   test("POST /create-content runs full pipeline", async () => {
     researchAgent.mockResolvedValue({
       product_name: "ACF",
-      features: ["f1"],
       target_audience: "teams",
+      key_features: ["f1"],
       value_proposition: "value",
-      tone: "professional",
-      ambiguous_points: []
+      supporting_points: ["s1"],
+      tone_detected: "professional",
+      constraints: [],
+      risks_or_ambiguities: [],
+      missing_information: []
     });
 
     copywriterAgent.mockResolvedValue({
       blog_post: "Draft blog",
-      social_thread: ["1", "2", "3", "4", "5"],
+      linkedin_post: "Draft linkedin",
+      twitter_thread: ["1", "2", "3", "4", "5"],
       email_teaser: "Draft teaser"
     });
 
     editorAgent.mockResolvedValue({
       blog_post: "Final blog",
-      social_thread: ["A", "B", "C", "D", "E"],
+      linkedin_post: "Final linkedin",
+      twitter_thread: ["A", "B", "C", "D", "E"],
       email_teaser: "Final teaser",
       validation_report: {
         hallucination_detected: false,

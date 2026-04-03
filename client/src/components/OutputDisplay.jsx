@@ -36,7 +36,9 @@ export default function OutputDisplay({ result, error }) {
 
   const { meta_document: metaDocument, content } = result;
 
-  const threadText = content.social_thread
+  const threadItems = content.twitter_thread || content.social_thread || [];
+
+  const threadText = threadItems
     .map((post, index) => `${index + 1}. ${post}`)
     .join("\n");
 
@@ -62,10 +64,17 @@ export default function OutputDisplay({ result, error }) {
         </button>
         <button
           type="button"
+          className={activeTab === "linkedin" ? "tab active" : "tab"}
+          onClick={() => setActiveTab("linkedin")}
+        >
+          LinkedIn
+        </button>
+        <button
+          type="button"
           className={activeTab === "thread" ? "tab active" : "tab"}
           onClick={() => setActiveTab("thread")}
         >
-          Thread
+          Twitter
         </button>
         <button
           type="button"
@@ -113,7 +122,7 @@ export default function OutputDisplay({ result, error }) {
 
       {activeTab === "thread" && (
         <div>
-          <h4>Social Media Thread</h4>
+          <h4>Twitter Thread</h4>
           <button
             type="button"
             className="secondary-btn"
@@ -122,10 +131,24 @@ export default function OutputDisplay({ result, error }) {
             Copy
           </button>
           <ol>
-            {content.social_thread.map((post, index) => (
+            {threadItems.map((post, index) => (
               <li key={`thread-${index}`}>{post}</li>
             ))}
           </ol>
+        </div>
+      )}
+
+      {activeTab === "linkedin" && (
+        <div>
+          <h4>LinkedIn Post</h4>
+          <button
+            type="button"
+            className="secondary-btn"
+            onClick={() => copyText(content.linkedin_post || "", "LinkedIn")}
+          >
+            Copy
+          </button>
+          <p>{content.linkedin_post || "No LinkedIn output available."}</p>
         </div>
       )}
 

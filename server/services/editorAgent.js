@@ -20,8 +20,10 @@ function normalizeEditorResult(candidate) {
 
   return {
     blog_post: typeof candidate.blog_post === "string" ? candidate.blog_post : "",
-    social_thread: Array.isArray(candidate.social_thread)
-      ? candidate.social_thread
+    linkedin_post:
+      typeof candidate.linkedin_post === "string" ? candidate.linkedin_post : "",
+    twitter_thread: Array.isArray(candidate.twitter_thread)
+      ? candidate.twitter_thread
           .filter((item) => typeof item === "string")
           .slice(0, 5)
       : [],
