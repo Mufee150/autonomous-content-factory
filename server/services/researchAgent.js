@@ -8,118 +8,72 @@ function getSectionValue(sourceText, sectionName) {
   return match ? match[1].trim() : "";
 }
 
-function toTitleCase(value) {
-  return value
-    .split(" ")
-    .filter(Boolean)
-    .map((word) => {
-      if (/^(ai|ml|aiml)$/i.test(word)) {
-        return word.toUpperCase();
-      }
-
-      return word[0].toUpperCase() + word.slice(1).toLowerCase();
-    })
-    .join(" ");
-}
-
-function inferTopic(sourceText) {
-  if (/\baiml\b/i.test(sourceText)) {
-    return "AI and Machine Learning";
-  }
-
-  const patterns = [
-    /workshop\s+on\s+([a-z0-9\s-]+)/i,
-    /about\s+([a-z0-9\s-]+)/i,
-    /for\s+([a-z0-9\s-]+)/i
-  ];
-
-  for (const pattern of patterns) {
-    const match = sourceText.match(pattern);
-    if (match && match[1]) {
-      return match[1].replace(/[.,!?;:].*$/, "").trim();
-    }
-  }
-
-  return "";
-}
-
-function inferProductName(sourceText) {
-  const explicitProduct = getSectionValue(sourceText, "Product");
-  if (explicitProduct) {
-    return explicitProduct;
-  }
-
-  const topic = inferTopic(sourceText);
-  if (topic) {
-    if (/workshop/i.test(sourceText)) {
-      return `${toTitleCase(topic)} Workshop`;
-    }
-
-    return toTitleCase(topic);
-  }
-
-  return "Content Campaign";
-}
-
-function inferFeatures(sourceText, topic) {
-  const explicitFeatures = getSectionValue(sourceText, "Features");
-  if (explicitFeatures) {
-    return explicitFeatures
-      .split(",")
-      .map((item) => item.trim())
-      .filter(Boolean);
-  }
-
-  if (/workshop/i.test(sourceText)) {
-    return [
-      "Structured learning agenda",
-      "Hands-on practical exercises",
-      "Guided instruction and Q&A"
-    ];
-  }
-
-  if (topic) {
-    return [
-      `Focused coverage of ${topic}`,
-      "Clear learning flow",
-      "Actionable next steps"
-    ];
-  }
-
-  return [];
-}
-
 function buildFallbackMetaDocument(sourceText) {
-  const topic = inferTopic(sourceText);
-  const productName = inferProductName(sourceText);
-  const features = inferFeatures(sourceText, topic);
-  const explicitAudience = getSectionValue(sourceText, "Audience");
-  const explicitValue = getSectionValue(sourceText, "Value");
-  const targetAudience =
-    explicitAudience || (topic ? `Learners interested in ${topic}` : "");
-  const valueProposition =
-    explicitValue ||
-    (topic
-      ? `Help learners build practical understanding of ${topic} quickly`
-      : "");
-  const tone = getSectionValue(sourceText, "Tone") || "professional";
+  const productName = getSectionValue(sourceText, "Product");
+  const targetAudience = getSectionValue(sourceText, "Audience");
+  const valueProposition = getSectionValue(sourceText, "Value");
+  const toneDetected = getSectionValue(sourceText, "Tone");
 
-  const ambiguousPoints = [];
+  const featureLine = getSectionValue(sourceText, "Features");
+  const keyFeatures = featureLine
+    ? featureLine
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean)
+    : [];
+
+  const supportingLine = getSectionValue(sourceText, "Supporting Points");
+  const supportingPoints = supportingLine
+    ? supportingLine
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean)
+    : [];
+
+  const constraintsLine = getSectionValue(sourceText, "Constraints");
+  const constraints = constraintsLine
+    ? constraintsLine
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean)
+    : [];
+
+  const risksOrAmbiguities = [];
+  if (!productName) {
+    risksOrAmbiguities.push("Product name is unclear in source content.");
+  }
   if (!targetAudience) {
-    ambiguousPoints.push("Target audience is not clearly specified.");
+    risksOrAmbiguities.push("Target audience is unclear in source content.");
+  }
+
+  const missingInformation = [];
+  if (!productName) {
+    missingInformation.push("Product name");
+  }
+  if (!targetAudience) {
+    missingInformation.push("Target audience");
+  }
+  if (!keyFeatures.length) {
+    missingInformation.push("Key features");
   }
   if (!valueProposition) {
-    ambiguousPoints.push("Value proposition is not clearly specified.");
+    missingInformation.push("Value proposition");
+  }
+  if (!toneDetected) {
+    missingInformation.push("Tone");
   }
 
   return {
     ...metaSchema,
     product_name: productName,
-    features,
     target_audience: targetAudience,
+    key_features: keyFeatures,
     value_proposition: valueProposition,
-    tone,
-    ambiguous_points: ambiguousPoints
+    supporting_points: supportingPoints,
+    tone_detected: toneDetected,
+    constraints,
+    risks_or_ambiguities: risksOrAmbiguities,
+    missing_information: missingInformation
   };
 }
 
@@ -127,20 +81,30 @@ function normalizeMetaDocument(candidate) {
   return {
     product_name:
       typeof candidate.product_name === "string" ? candidate.product_name : "",
-    features: Array.isArray(candidate.features)
-      ? candidate.features.filter((item) => typeof item === "string")
-      : [],
     target_audience:
       typeof candidate.target_audience === "string"
         ? candidate.target_audience
         : "",
+    key_features: Array.isArray(candidate.key_features)
+      ? candidate.key_features.filter((item) => typeof item === "string")
+      : [],
     value_proposition:
       typeof candidate.value_proposition === "string"
         ? candidate.value_proposition
         : "",
-    tone: typeof candidate.tone === "string" ? candidate.tone : "",
-    ambiguous_points: Array.isArray(candidate.ambiguous_points)
-      ? candidate.ambiguous_points.filter((item) => typeof item === "string")
+    supporting_points: Array.isArray(candidate.supporting_points)
+      ? candidate.supporting_points.filter((item) => typeof item === "string")
+      : [],
+    tone_detected:
+      typeof candidate.tone_detected === "string" ? candidate.tone_detected : "",
+    constraints: Array.isArray(candidate.constraints)
+      ? candidate.constraints.filter((item) => typeof item === "string")
+      : [],
+    risks_or_ambiguities: Array.isArray(candidate.risks_or_ambiguities)
+      ? candidate.risks_or_ambiguities.filter((item) => typeof item === "string")
+      : [],
+    missing_information: Array.isArray(candidate.missing_information)
+      ? candidate.missing_information.filter((item) => typeof item === "string")
       : []
   };
 }

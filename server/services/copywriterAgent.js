@@ -3,7 +3,7 @@ const prompts = require("./promptTemplates");
 
 function buildFallbackDraft(metaDocument) {
   const productName = metaDocument.product_name || "the product";
-  const features = (metaDocument.features || []).join(", ") || "its core capabilities";
+  const features = (metaDocument.key_features || []).join(", ") || "its core capabilities";
   const audience = metaDocument.target_audience || "your target audience";
   const value =
     metaDocument.value_proposition || "delivering clear and practical value";
