@@ -1,4 +1,5 @@
 ﻿import { useState } from "react";
+import AIAuditCard from "./AIAuditCard";
 
 export default function OutputDisplay({ result, error }) {
   const [activeTab, setActiveTab] = useState("meta");
@@ -179,7 +180,16 @@ export default function OutputDisplay({ result, error }) {
           >
             Copy
           </button>
-          <pre>{JSON.stringify(review, null, 2)}</pre>
+          <AIAuditCard
+            status={review.status}
+            issues={[
+              ...(review.hallucinations_found || []),
+              ...(review.tone_issues || []),
+              ...(review.missing_alignment || [])
+            ]}
+            fixes={review.suggested_fixes || []}
+            regenerated={Boolean(content.regeneration_applied)}
+          />
         </div>
       )}
     </section>
