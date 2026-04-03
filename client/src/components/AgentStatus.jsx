@@ -1,30 +1,46 @@
-﻿export default function AgentStatus({ status = "idle" }) {
+﻿function AgentCard({ title, icon, state }) {
+  const stateLabel = {
+    idle: "Idle",
+    thinking: "Thinking",
+    completed: "Completed",
+    rejected: "Rejected"
+  };
+
+  return (
+    <div className={`agent-card agent-${state}`}>
+      <div className="agent-card-head">
+        <p className="agent-title">
+          {icon} {title}
+        </p>
+        <p className="agent-state">{stateLabel[state] || "Idle"}</p>
+      </div>
+
+      {state === "thinking" && <div className="thinking-dot" />}
+      {state === "completed" && <p className="agent-mark">checkmark</p>}
+      {state === "rejected" && <p className="agent-mark rejected-mark">attention required</p>}
+    </div>
+  );
+}
+
+export default function AgentStatus({ status = "idle", agentStates }) {
   const statusMap = {
     idle: "Idle",
-    researching: "Research Agent is building the Meta Document...",
-    generating: "Copywriter and Editor Agents are generating content...",
+    researching: "Research phase running",
+    generating: "Generation phase running",
     completed: "Completed",
-    failed: "Failed"
+    failed: "Rejected"
   };
-
-  const stepMap = {
-    researching: 1,
-    generating: 2,
-    completed: 3
-  };
-
-  const activeStep = stepMap[status] || 0;
 
   return (
     <section className="card">
       <h3>Agent Status</h3>
       <p>Current state: {statusMap[status] || status}</p>
 
-      <ul className="status-steps">
-        <li className={activeStep >= 1 ? "done" : ""}>Research Meta Document</li>
-        <li className={activeStep >= 2 ? "done" : ""}>Generate Campaign Content</li>
-        <li className={activeStep >= 3 ? "done" : ""}>Finalize Output</li>
-      </ul>
+      <div className="agent-grid">
+        <AgentCard title="Research Agent" icon="🧠" state={agentStates.research} />
+        <AgentCard title="Copywriter Agent" icon="✍️" state={agentStates.copywriter} />
+        <AgentCard title="Editor Agent" icon="✅" state={agentStates.editor} />
+      </div>
     </section>
   );
 }
