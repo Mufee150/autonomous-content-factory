@@ -12,11 +12,21 @@ function toTitleCase(value) {
   return value
     .split(" ")
     .filter(Boolean)
-    .map((word) => word[0].toUpperCase() + word.slice(1).toLowerCase())
+    .map((word) => {
+      if (/^(ai|ml|aiml)$/i.test(word)) {
+        return word.toUpperCase();
+      }
+
+      return word[0].toUpperCase() + word.slice(1).toLowerCase();
+    })
     .join(" ");
 }
 
 function inferTopic(sourceText) {
+  if (/\baiml\b/i.test(sourceText)) {
+    return "AI and Machine Learning";
+  }
+
   const patterns = [
     /workshop\s+on\s+([a-z0-9\s-]+)/i,
     /about\s+([a-z0-9\s-]+)/i,
