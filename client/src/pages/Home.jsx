@@ -89,11 +89,11 @@ export default function Home() {
 
         {/* Hero Visual */}
         <div className="relative w-full max-w-4xl">
-          <div className="absolute inset-0 -z-10 bg-gradient-to-r from-blue-600/20 to-cyan-600/20 blur-3xl" />
-          <div className="rounded-2xl border border-white/20 bg-gradient-to-br from-white/80 to-white/60 p-8 shadow-2xl backdrop-blur-xl">
+          <div className="absolute inset-0 -z-10 bg-gradient-to-r from-indigo-600/20 to-purple-600/20 blur-3xl" />
+          <div className="rounded-2xl border border-indigo-500/30 bg-gradient-to-br from-indigo-900/20 to-purple-900/10 p-8 shadow-2xl backdrop-blur-xl">
             <div className="space-y-4">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="h-3 rounded-full bg-gradient-to-r from-slate-200 to-slate-100" />
+                <div key={i} className="h-3 rounded-full bg-gradient-to-r from-indigo-500/30 to-purple-500/30" />
               ))}
             </div>
           </div>
@@ -103,8 +103,8 @@ export default function Home() {
       {/* Features Section */}
       <section id="features" className="mx-auto w-full max-w-7xl px-6 py-20">
         <div className="mb-16 text-center">
-          <h2 className="mb-4 text-4xl font-bold">How it Works</h2>
-          <p className="text-lg text-slate-600">
+          <h2 className="mb-4 text-4xl font-bold text-white">How it Works</h2>
+          <p className="text-lg text-gray-300">
             Our multi-agent system orchestrates research, generation, and review
           </p>
         </div>
@@ -115,15 +115,15 @@ export default function Home() {
             return (
               <div
                 key={index}
-                className="group rounded-2xl border border-white/20 bg-gradient-to-br from-white/80 to-white/60 p-8 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:shadow-xl backdrop-blur-xl"
+                className="group rounded-2xl border border-indigo-500/30 bg-gradient-to-br from-indigo-900/20 to-purple-900/10 p-8 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:shadow-xl backdrop-blur-xl"
               >
-                <div className="mb-4 inline-block rounded-xl bg-gradient-to-br from-blue-100 to-cyan-100 p-4 transition-all group-hover:scale-110">
-                  <Icon className="h-6 w-6 text-blue-600" />
+                <div className="mb-4 inline-block rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 p-4 transition-all group-hover:scale-110">
+                  <Icon className="h-6 w-6 text-indigo-300" />
                 </div>
-                <h3 className="mb-2 text-lg font-bold text-slate-900">
+                <h3 className="mb-2 text-lg font-bold text-white">
                   {feature.title}
                 </h3>
-                <p className="text-slate-600">{feature.description}</p>
+                <p className="text-gray-300">{feature.description}</p>
               </div>
             );
           })}
@@ -133,30 +133,30 @@ export default function Home() {
       {/* Output Examples Section */}
       <section className="mx-auto w-full max-w-7xl px-6 py-20">
         <div className="mb-16 text-center">
-          <h2 className="mb-4 text-4xl font-bold">Generate Everything</h2>
-          <p className="text-lg text-slate-600">
+          <h2 className="mb-4 text-4xl font-bold text-white">Generate Everything</h2>
+          <p className="text-lg text-gray-300">
             From a single source, create multiple content formats
           </p>
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2">
           {[
-            { icon: "📄", label: "Blog Posts", color: "from-blue-100 to-blue-50" },
-            { icon: "💼", label: "LinkedIn Content", color: "from-cyan-100 to-cyan-50" },
+            { icon: "📄", label: "Blog Posts", color: "from-indigo-900/20 to-purple-900/10" },
+            { icon: "💼", label: "LinkedIn Content", color: "from-indigo-900/20 to-purple-900/10" },
             {
               icon: "🧵",
               label: "Twitter Threads",
-              color: "from-indigo-100 to-indigo-50"
+              color: "from-indigo-900/20 to-purple-900/10"
             },
-            { icon: "✉️", label: "Email Campaigns", color: "from-teal-100 to-teal-50" }
+            { icon: "✉️", label: "Email Campaigns", color: "from-indigo-900/20 to-purple-900/10" }
           ].map((item, index) => (
             <div
               key={index}
-              className={`rounded-2xl border border-white/20 bg-gradient-to-br ${item.color} p-8 shadow-lg backdrop-blur-xl`}
+              className={`rounded-2xl border border-indigo-500/30 bg-gradient-to-br ${item.color} p-8 shadow-lg backdrop-blur-xl`}
             >
               <div className="text-4xl mb-4">{item.icon}</div>
-              <h3 className="text-xl font-bold text-slate-900">{item.label}</h3>
-              <p className="mt-2 text-sm text-slate-600">
+              <h3 className="text-xl font-bold text-white">{item.label}</h3>
+              <p className="mt-2 text-sm text-gray-300">
                 AI-generated and editorial-reviewed
               </p>
             </div>
@@ -166,14 +166,14 @@ export default function Home() {
 
       {/* CTA Section */}
       <section className="mx-auto w-full max-w-7xl px-6 py-20">
-        <div className="rounded-3xl border border-white/20 bg-gradient-to-r from-blue-600/10 to-cyan-600/10 p-12 text-center backdrop-blur-xl">
-          <h2 className="mb-4 text-3xl font-bold">Ready to get started?</h2>
-          <p className="mb-8 text-lg text-slate-600">
+        <div className="rounded-3xl border border-indigo-500/30 bg-gradient-to-r from-indigo-600/10 to-purple-600/10 p-12 text-center backdrop-blur-xl">
+          <h2 className="mb-4 text-3xl font-bold text-white">Ready to get started?</h2>
+          <p className="mb-8 text-lg text-gray-300">
             Create your first campaign in seconds
           </p>
           <Link
             to="/dashboard"
-            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 px-8 py-4 font-semibold text-white transition-all hover:shadow-lg hover:shadow-blue-500/40"
+            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-4 font-semibold text-white transition-all hover:shadow-lg hover:shadow-indigo-500/40"
           >
             <span>Open Dashboard</span>
             <ArrowRight className="h-5 w-5" />
@@ -182,9 +182,9 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-white/20 bg-slate-900/50 py-8 backdrop-blur-lg">
-        <div className="mx-auto max-w-7xl px-6 text-center text-sm text-slate-400">
-          <p>© {new Date().getFullYear()} Autonomous Content Factory. All rights reserved.</p>
+      <footer className="border-t border-white/10 bg-black/30 py-8 backdrop-blur-lg">
+        <div className="mx-auto max-w-7xl px-6 text-center text-sm text-gray-400">
+          <p>© {new Date().getFullYear()} Content Factory. All rights reserved.</p>
         </div>
       </footer>
     </div>
