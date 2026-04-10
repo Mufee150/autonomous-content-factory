@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import {
   Copy,
   FileText,
@@ -6,7 +6,7 @@ import {
   MessageCircle,
   Mail,
   Shield,
-  CheckCircle2
+  Check
 } from "lucide-react";
 import AIAuditCard from "./AIAuditCard";
 
@@ -18,40 +18,34 @@ export default function OutputDisplay({ result, error }) {
     try {
       await navigator.clipboard.writeText(text);
       setCopiedLabel(label);
-      setTimeout(() => {
-        setCopiedLabel("");
-      }, 1200);
-    } catch (clipboardError) {
+      setTimeout(() => setCopiedLabel(""), 1500);
+    } catch {
       setCopiedLabel("Copy failed");
     }
   }
 
   if (error) {
     return (
-      <section className="rounded-2xl border border-red-500/30 bg-gradient-to-br from-red-900/20 to-orange-900/10 p-6 shadow-lg">
-        <div className="mb-4 flex items-center gap-3">
-          <div className="rounded-lg bg-red-500/20 p-3">
-            <CheckCircle2 className="h-6 w-6 text-red-400" />
+      <div className="glass-card-lg" style={{ borderColor: "rgba(251, 113, 133, 0.25)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+          <div style={{ width: 44, height: 44, borderRadius: "var(--radius-md)", background: "rgba(251, 113, 133, 0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <Shield size={22} style={{ color: "var(--accent-rose)" }} />
           </div>
-          <h3 className="text-lg font-bold text-red-200">Generation Failed</h3>
+          <h3 style={{ fontSize: "1.125rem", fontWeight: 800, color: "var(--accent-rose)" }}>Generation Failed</h3>
         </div>
-        <p className="rounded-lg border border-red-500/30 bg-slate-900/50 px-4 py-3 text-sm text-red-300">
+        <p style={{ padding: "12px 16px", borderRadius: "var(--radius-sm)", background: "rgba(251, 113, 133, 0.05)", border: "1px solid rgba(251, 113, 133, 0.15)", fontSize: 14, color: "var(--accent-rose)", lineHeight: 1.6 }}>
           {error}
         </p>
-      </section>
+      </div>
     );
   }
 
-  if (!result) {
-    return null;
-  }
+  if (!result) return null;
 
   const { meta_document: metaDocument, content } = result;
   const review = content.editor_review || content.validation_report || {};
   const threadItems = content.twitter_thread || content.social_thread || [];
-  const threadText = threadItems
-    .map((post, index) => `${index + 1}. ${post}`)
-    .join("\n");
+  const threadText = threadItems.map((post, i) => `${i + 1}. ${post}`).join("\n");
 
   const tabs = [
     { id: "meta", label: "Meta", icon: FileText },
@@ -59,189 +53,117 @@ export default function OutputDisplay({ result, error }) {
     { id: "linkedin", label: "LinkedIn", icon: Share2 },
     { id: "thread", label: "Twitter", icon: MessageCircle },
     { id: "email", label: "Email", icon: Mail },
-    { id: "validation", label: "Review", icon: Shield }
+    { id: "validation", label: "Audit", icon: Shield },
   ];
 
+  const contentMap = {
+    meta: JSON.stringify(metaDocument, null, 2),
+    blog: content.blog_post,
+    linkedin: content.linkedin_post,
+    thread: threadText,
+    email: content.email_teaser,
+    validation: JSON.stringify(review, null, 2),
+  };
+
   return (
-    <section className="space-y-6 rounded-2xl border border-indigo-500/30 bg-gradient-to-br from-indigo-900/20 to-purple-900/10 p-6 shadow-xl backdrop-blur-xl">
-      <div className="flex items-center justify-between">
+    <div className="glass-card-lg" style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
         <div>
-          <h3 className="text-lg font-bold text-white">Generated Output</h3>
-          <p className="mt-1 text-sm text-gray-300">
-            Review and manage your generated content
-          </p>
+          <h3 style={{ fontSize: "1.0625rem", fontWeight: 800, color: "var(--text-primary)", marginBottom: 2 }}>Generated Output</h3>
+          <p style={{ fontSize: 12, color: "var(--text-muted)", margin: 0 }}>Review your generated campaign content</p>
         </div>
         {copiedLabel && (
-          <div className="animate-fade-in rounded-lg bg-emerald-500/20 px-4 py-2 text-sm font-semibold text-emerald-300">
+          <span className="badge badge-success" style={{ animation: "scaleIn 0.2s var(--ease-spring) both" }}>
+            <Check size={12} />
             {copiedLabel} copied
-          </div>
+          </span>
         )}
       </div>
 
-      {/* Tab Navigation */}
-      <div className="scrollbar-hide flex gap-2 overflow-x-auto rounded-xl bg-slate-50/60 p-2">
-        {tabs.map((tab) => {
+      {/* Tabs */}
+      <div className="tab-group" style={{ marginBottom: 16 }}>
+        {tabs.map(tab => {
           const Icon = tab.icon;
+          const active = activeTab === tab.id;
           return (
             <button
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
-              className={`group flex items-center gap-2 whitespace-nowrap rounded-lg px-4 py-2 font-medium transition-all duration-200 ${
-                activeTab === tab.id
-                  ? "bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg"
-                  : "text-slate-600 hover:bg-white/60 hover:text-slate-900"
-              }`}
+              className={`tab-btn${active ? " active" : ""}`}
+              style={{ display: "flex", alignItems: "center", gap: 6 }}
             >
-              <Icon className="h-4 w-4" />
-              <span className="text-sm">{tab.label}</span>
+              <Icon size={13} />
+              {tab.label}
             </button>
           );
         })}
       </div>
 
-      {/* Tab Content */}
-      <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-6">
+      {/* Content */}
+      <div style={{ flex: 1, position: "relative", borderRadius: "var(--radius-md)", background: "rgba(0,0,0,0.1)", padding: "1.25rem", minHeight: 300 }}>
+        {/* Copy Btn */}
+        <button
+          onClick={() => copyText(contentMap[activeTab], activeTab)}
+          className="btn-ghost"
+          style={{ position: "absolute", top: 12, right: 12, padding: "6px 10px", zIndex: 2 }}
+          title="Copy to clipboard"
+        >
+          <Copy size={14} />
+        </button>
+
         {activeTab === "meta" && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h4 className="font-semibold text-slate-900">Meta Document</h4>
-              <button
-                type="button"
-                onClick={() => copyText(JSON.stringify(metaDocument, null, 2), "Meta")}
-                className="inline-flex items-center gap-2 rounded-lg bg-blue-500 px-3 py-2 text-xs font-semibold text-white transition-all hover:shadow-lg active:scale-95"
-              >
-                <Copy className="h-4 w-4" />
-                Copy
-              </button>
-            </div>
-            <pre className="max-h-96 overflow-auto rounded-lg border border-slate-300 bg-white p-4 text-xs text-slate-700">
-              {JSON.stringify(metaDocument, null, 2)}
-            </pre>
-          </div>
+          <pre style={{ whiteSpace: "pre-wrap", fontSize: 12 }}>
+            {JSON.stringify(metaDocument, null, 2)}
+          </pre>
         )}
 
         {activeTab === "blog" && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h4 className="font-semibold text-slate-900">Blog Post</h4>
-              <button
-                type="button"
-                onClick={() => copyText(content.blog_post, "Blog")}
-                className="inline-flex items-center gap-2 rounded-lg bg-blue-500 px-3 py-2 text-xs font-semibold text-white transition-all hover:shadow-lg active:scale-95"
-              >
-                <Copy className="h-4 w-4" />
-                Copy
-              </button>
-            </div>
-            <div className="max-h-96 overflow-auto rounded-lg border border-slate-300 bg-white p-6 text-sm leading-relaxed text-slate-800">
-              {content.blog_post ? (
-                <p className="whitespace-pre-wrap">{content.blog_post}</p>
-              ) : (
-                <p className="text-slate-500">No blog post generated.</p>
-              )}
+          <div>
+            <h4 style={{ fontSize: "1.125rem", fontWeight: 800, color: "var(--text-primary)", marginBottom: 12 }}>Blog Post</h4>
+            <div style={{ whiteSpace: "pre-wrap", color: "var(--text-secondary)", lineHeight: 1.7, fontSize: 14 }}>
+              {content.blog_post}
             </div>
           </div>
         )}
 
         {activeTab === "linkedin" && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h4 className="font-semibold text-slate-900">LinkedIn Post</h4>
-              <button
-                type="button"
-                onClick={() => copyText(content.linkedin_post || "", "LinkedIn")}
-                className="inline-flex items-center gap-2 rounded-lg bg-blue-500 px-3 py-2 text-xs font-semibold text-white transition-all hover:shadow-lg active:scale-95"
-              >
-                <Copy className="h-4 w-4" />
-                Copy
-              </button>
-            </div>
-            <div className="max-h-96 overflow-auto rounded-lg border border-slate-300 bg-white p-6 text-sm leading-relaxed text-slate-800">
-              {content.linkedin_post ? (
-                <p className="whitespace-pre-wrap">{content.linkedin_post}</p>
-              ) : (
-                <p className="text-slate-500">No LinkedIn post generated.</p>
-              )}
+          <div>
+            <h4 style={{ fontSize: "1.125rem", fontWeight: 800, color: "var(--text-primary)", marginBottom: 12 }}>LinkedIn Post</h4>
+            <div style={{ whiteSpace: "pre-wrap", color: "var(--text-secondary)", lineHeight: 1.7, fontSize: 14 }}>
+              {content.linkedin_post}
             </div>
           </div>
         )}
 
         {activeTab === "thread" && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h4 className="font-semibold text-slate-900">Twitter Thread</h4>
-              <button
-                type="button"
-                onClick={() => copyText(threadText, "Thread")}
-                className="inline-flex items-center gap-2 rounded-lg bg-blue-500 px-3 py-2 text-xs font-semibold text-white transition-all hover:shadow-lg active:scale-95"
-              >
-                <Copy className="h-4 w-4" />
-                Copy
-              </button>
-            </div>
-            <div className="max-h-96 space-y-3 overflow-auto">
-              {threadItems.length > 0 ? (
-                threadItems.map((post, index) => (
-                  <div
-                    key={`thread-${index}`}
-                    className="rounded-lg border border-slate-300 bg-white p-4"
-                  >
-                    <span className="mr-2 inline-block font-bold text-blue-600">
-                      {index + 1}.
-                    </span>
-                    <span className="text-sm text-slate-800">
-                      {post}
-                    </span>
+          <div>
+            <h4 style={{ fontSize: "1.125rem", fontWeight: 800, color: "var(--text-primary)", marginBottom: 16 }}>Twitter Thread</h4>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {threadItems.map((post, i) => (
+                <div key={i} style={{ padding: 14, borderRadius: "var(--radius-sm)", border: "1px solid var(--border-subtle)", background: "var(--bg-surface)" }}>
+                  <div style={{ fontSize: 10, fontWeight: 800, color: "var(--brand)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>
+                    Tweet {i + 1}
                   </div>
-                ))
-              ) : (
-                <p className="text-slate-500">No Twitter thread generated.</p>
-              )}
+                  <p style={{ margin: 0, color: "var(--text-secondary)", lineHeight: 1.6, fontSize: 13 }}>{post}</p>
+                </div>
+              ))}
             </div>
           </div>
         )}
 
         {activeTab === "email" && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h4 className="font-semibold text-slate-900">Email Teaser</h4>
-              <button
-                type="button"
-                onClick={() => copyText(content.email_teaser, "Email")}
-                className="inline-flex items-center gap-2 rounded-lg bg-blue-500 px-3 py-2 text-xs font-semibold text-white transition-all hover:shadow-lg active:scale-95"
-              >
-                <Copy className="h-4 w-4" />
-                Copy
-              </button>
-            </div>
-            <div className="max-h-96 overflow-auto rounded-lg border border-slate-300 bg-white p-6 text-sm leading-relaxed text-slate-800">
-              {content.email_teaser ? (
-                <p className="whitespace-pre-wrap">{content.email_teaser}</p>
-              ) : (
-                <p className="text-slate-500">No email teaser generated.</p>
-              )}
+          <div>
+            <h4 style={{ fontSize: "1.125rem", fontWeight: 800, color: "var(--text-primary)", marginBottom: 12 }}>Email Teaser</h4>
+            <div style={{ whiteSpace: "pre-wrap", color: "var(--text-secondary)", lineHeight: 1.7, fontSize: 14 }}>
+              {content.email_teaser}
             </div>
           </div>
         )}
 
-        {activeTab === "validation" && (
-          <div className="space-y-4">
-            <h4 className="font-semibold text-slate-900">Editorial Review</h4>
-            <AIAuditCard
-              status={review.status}
-              issues={[
-                ...(review.hallucinations_found || []),
-                ...(review.tone_issues || []),
-                ...(review.missing_alignment || [])
-              ]}
-              fixes={review.suggested_fixes || []}
-              regenerated={Boolean(content.regeneration_applied)}
-            />
-          </div>
-        )}
+        {activeTab === "validation" && <AIAuditCard review={review} />}
       </div>
-    </section>
+    </div>
   );
 }
-

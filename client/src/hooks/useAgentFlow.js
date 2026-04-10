@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import api from "../services/api";
 
 function getTimestamp() {
@@ -46,7 +46,7 @@ export default function useAgentFlow() {
         source_text: sourceText
       });
 
-      const metaDocument = analyzeResponse.data.data;
+      const metaDocument = analyzeResponse.data;
       addFeed("Extracted source facts.", { agent: "Research", type: "success" });
       setAgentStates({
         research: "completed",
@@ -64,7 +64,7 @@ export default function useAgentFlow() {
         meta_document: metaDocument
       });
 
-      const content = generateResponse.data.data;
+      const content = generateResponse.data;
       const review = content.editor_review || {};
 
       if (content.regeneration_applied) {

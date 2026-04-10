@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { FileText, Sparkles } from "lucide-react";
 
 export default function UploadBox({ onSubmit, isLoading }) {
@@ -6,65 +6,51 @@ export default function UploadBox({ onSubmit, isLoading }) {
 
   function handleSubmit(event) {
     event.preventDefault();
-
-    if (!sourceText.trim()) {
-      return;
-    }
-
+    if (!sourceText.trim()) return;
     onSubmit(sourceText.trim());
   }
 
   return (
-    <section className="rounded-2xl border border-indigo-500/30 bg-gradient-to-br from-indigo-900/20 to-purple-900/10 p-6 shadow-xl backdrop-blur-xl transition-all duration-300 hover:shadow-2xl">
-      <div className="mb-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="rounded-lg bg-gradient-to-br from-indigo-500/20 to-purple-500/20 p-3">
-            <FileText className="h-6 w-6 text-indigo-300" />
-          </div>
-          <div>
-            <h3 className="text-lg font-bold text-white">Source Document</h3>
-            <p className="text-sm text-gray-300">
-              Paste your source material to generate a full content campaign
-            </p>
-          </div>
+    <div className="glass-card-lg">
+      <div className="section-title">
+        <div className="icon-wrap" style={{ background: "rgba(129, 140, 248, 0.1)" }}>
+          <FileText size={18} style={{ color: "var(--brand)" }} />
+        </div>
+        <div>
+          <h3 style={{ fontSize: "1.0625rem", fontWeight: 800, color: "var(--text-primary)", margin: 0 }}>Source Document</h3>
+          <p style={{ fontSize: 13, color: "var(--text-muted)", margin: 0 }}>Paste your source material to generate a full content campaign</p>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="relative">
+      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <div style={{ position: "relative" }}>
           <textarea
             rows={8}
             value={sourceText}
-            onChange={(event) => setSourceText(event.target.value)}
-            placeholder="Paste your article, brief, product description, press release, or any source material here..."
-            className="w-full resize-none rounded-xl border border-indigo-500/30 bg-slate-900/50 px-4 py-3 font-mono text-sm text-gray-100 placeholder-gray-500 transition-all duration-200 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/30"
+            onChange={(e) => setSourceText(e.target.value)}
+            placeholder="Paste your article, brief, product description, or any source material here..."
             disabled={isLoading}
+            style={{ width: "100%", resize: "vertical" }}
           />
-          <div className="absolute bottom-3 right-3 text-xs text-gray-500">
-            {sourceText.length} characters
+          <div style={{ position: "absolute", bottom: 12, right: 16, display: "flex", alignItems: "center", gap: 6, fontSize: 10, fontWeight: 700, color: "var(--text-dim)", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+            <span style={{ width: 4, height: 4, borderRadius: "50%", background: "var(--text-dim)" }} />
+            {sourceText.length.toLocaleString()} chars
           </div>
         </div>
 
         <button
           type="submit"
           disabled={isLoading || !sourceText.trim()}
-          className="group relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-3 font-semibold text-white shadow-lg transition-all duration-300 hover:shadow-xl hover:shadow-indigo-500/40 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="btn-primary"
+          style={{
+            width: "100%", justifyContent: "center", padding: "14px 0",
+            fontSize: "0.9375rem", borderRadius: "var(--radius-md)",
+          }}
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-          <div className="relative flex items-center justify-center gap-2">
-            <Sparkles className={`h-5 w-5 ${isLoading ? "animate-spin" : ""}`} />
-            <span>
-              {isLoading ? "Processing..." : "Generate Content"}
-            </span>
-          </div>
+          <Sparkles size={18} className={isLoading ? "animate-spin" : ""} />
+          {isLoading ? "Processing Pipeline..." : "Generate Content"}
         </button>
       </form>
-
-      <p className="mt-3 text-xs text-gray-400">
-        💡 Tip: Add source documents like press releases, blog posts, whitepapers,
-        or product specifications for best results.
-      </p>
-    </section>
+    </div>
   );
 }
-

@@ -1,64 +1,49 @@
-import { Clock, ChevronRight } from "lucide-react";
+import { Clock, ExternalLink } from "lucide-react";
 
 export default function HistoryPanel({ history, onSelect }) {
-  if (history.length === 0) {
-    return (
-      <section className="rounded-2xl border border-white/20 bg-gradient-to-br from-white/80 to-white/60 p-6 shadow-xl backdrop-blur-xl">
-        <div className="mb-4 flex items-center gap-3">
-          <div className="rounded-lg bg-gradient-to-br from-amber-100 to-orange-100 p-3">
-            <Clock className="h-5 w-5 text-amber-600" />
-          </div>
-          <h3 className="text-lg font-bold text-slate-900">Recent Runs</h3>
-        </div>
-        <p className="text-sm text-slate-500">
-          No previous runs yet. Create your first content generation to see it here.
-        </p>
-      </section>
-    );
-  }
+  if (history.length === 0) return null;
 
   return (
-    <section className="rounded-2xl border border-white/20 bg-gradient-to-br from-white/80 to-white/60 p-6 shadow-xl backdrop-blur-xl">
-      <div className="mb-4 flex items-center gap-3">
-        <div className="rounded-lg bg-gradient-to-br from-amber-100 to-orange-100 p-3">
-          <Clock className="h-5 w-5 text-amber-600" />
-        </div>
-        <h3 className="text-lg font-bold text-slate-900">Recent Runs</h3>
-      </div>
-
-      <ul className="space-y-2">
-        {history.map((item) => (
-          <li
-            key={item.id}
-            className="group rounded-lg border border-slate-200 bg-slate-50/60 p-3 transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50/60 hover:shadow-md"
-          >
-            <div className="mb-2 flex items-start justify-between gap-2">
-              <time className="text-xs font-semibold text-slate-500">
-                {new Date(item.createdAt).toLocaleDateString([], {
-                  month: "short",
-                  day: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit"
-                })}
-              </time>
-              <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">
-                Done
-              </span>
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      {history.map((item) => (
+        <div
+          key={item.id}
+          className="glass-card"
+          style={{
+            display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16,
+            cursor: "pointer", padding: "1rem 1.25rem",
+            transition: "all 0.25s var(--ease-out)",
+          }}
+          onClick={() => onSelect(item.id)}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--border-hover)"; e.currentTarget.style.transform = "translateX(4px)"; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = ""; e.currentTarget.style.transform = ""; }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 14, flex: 1, minWidth: 0 }}>
+            <div style={{ width: 36, height: 36, borderRadius: "var(--radius-sm)", background: "var(--bg-elevated)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              📄
             </div>
-            <p className="mb-3 line-clamp-2 text-sm text-slate-700">
-              {item.sourceText.slice(0, 120)}
-            </p>
-            <button
-              type="button"
-              onClick={() => onSelect(item.id)}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 px-3 py-2 text-xs font-semibold text-white transition-all duration-200 hover:shadow-lg active:scale-95"
-            >
-              <span>Load</span>
-              <ChevronRight className="h-4 w-4" />
-            </button>
-          </li>
-        ))}
-      </ul>
-    </section>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: 12, color: "var(--text-dim)", display: "flex", alignItems: "center", gap: 4, marginBottom: 4, fontWeight: 600 }}>
+                <Clock size={11} />
+                {new Date(item.createdAt).toLocaleString()}
+              </div>
+              <div style={{ fontSize: 13, color: "var(--text-secondary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 500 }}>
+                {item.sourceText.slice(0, 120)}
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onSelect(item.id); }}
+            className="btn-ghost"
+            style={{ padding: "6px 12px", fontSize: 12, flexShrink: 0 }}
+          >
+            <ExternalLink size={13} />
+            Open
+          </button>
+        </div>
+      ))}
+    </div>
   );
 }

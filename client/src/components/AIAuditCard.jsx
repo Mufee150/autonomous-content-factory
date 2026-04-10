@@ -3,153 +3,111 @@ import {
   BadgeCheck,
   CheckCircle2,
   CircleX,
-  RefreshCcw,
   ShieldCheck,
   Sparkles,
   Wrench
 } from "lucide-react";
 
-function hasKeyword(issues, pattern) {
-  return issues.some((item) => pattern.test(item));
-}
+export default function AIAuditCard({ review = {} }) {
+  const status = String(review.status || "APPROVED").toUpperCase();
+  const isApproved = status === "APPROVED";
+  const issues = [
+    ...(review.hallucinations_found || []),
+    ...(review.tone_issues || []),
+    ...(review.missing_alignment || [])
+  ];
+  const fixes = review.suggested_fixes || [];
 
-export default function AIAuditCard({
-  status = "APPROVED",
-  issues = [],
-  fixes = [],
-  regenerated = false
-}) {
-  const normalizedStatus = String(status || "APPROVED").toUpperCase();
-  const isApproved = normalizedStatus === "APPROVED";
+  const hasHallucinations = issues.some(i => /hallucination/i.test(i));
+  const hasToneIssues = issues.some(i => /tone/i.test(i));
+  const hasAlignmentIssues = issues.some(i => /alignment|value/i.test(i));
 
-  const hasHallucinations = hasKeyword(issues, /hallucination/i);
-  const hasToneIssues = hasKeyword(issues, /tone/i);
-  const hasAlignmentIssues = hasKeyword(issues, /alignment|value/i);
+  const checks = [
+    { label: "Fact Verification", failed: hasHallucinations, failLabel: "Issues", passLabel: "Passed" },
+    { label: "Tone Consistency", failed: hasToneIssues, failLabel: "Review", passLabel: "Aligned" },
+    { label: "Value Alignment", failed: hasAlignmentIssues, failLabel: "Review", passLabel: "Matched" },
+  ];
 
   return (
-    <section className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
-      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h4 className="flex items-center gap-2 text-lg font-semibold text-slate-900">
-          <ShieldCheck className="h-5 w-5 text-slate-500" />
-          AI Audit Status
-        </h4>
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ width: 40, height: 40, borderRadius: "var(--radius-sm)", background: "rgba(129, 140, 248, 0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <ShieldCheck size={20} style={{ color: "var(--brand)" }} />
+          </div>
+          <div>
+            <h4 style={{ fontSize: "1.0625rem", fontWeight: 800, color: "var(--text-primary)", margin: 0 }}>AI Audit Report</h4>
+            <p style={{ fontSize: 11, color: "var(--text-dim)", margin: 0 }}>Automated editorial validation</p>
+          </div>
+        </div>
 
         <span
-          className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold shadow-sm ${
-            isApproved
-              ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
-              : "bg-red-50 text-red-700 ring-1 ring-red-200"
-          }`}
+          className={`badge ${isApproved ? "badge-success" : "badge-danger"}`}
+          style={{ padding: "6px 14px", fontSize: 12 }}
         >
-          {isApproved ? (
-            <BadgeCheck className="h-5 w-5" />
-          ) : (
-            <CircleX className="h-5 w-5" />
-          )}
-          <span className="tracking-wide">{normalizedStatus}</span>
+          {isApproved ? <BadgeCheck size={14} /> : <CircleX size={14} />}
+          {status}
         </span>
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-2">
-        <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-4">
-          <h5 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-slate-700">
-            <AlertTriangle className="h-4 w-4" />
-            Issues Detected
+      {/* Two Column */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        {/* Analysis */}
+        <div style={{ padding: 16, borderRadius: "var(--radius-md)", border: "1px solid var(--border-subtle)", background: "var(--bg-surface)" }}>
+          <h5 style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-dim)", marginBottom: 14 }}>
+            <AlertTriangle size={13} />
+            Analysis Results
           </h5>
-
-          <ul className="space-y-2 text-sm">
-            <li
-              className={`flex items-center gap-2 rounded-lg px-2 py-1 ${
-                hasHallucinations
-                  ? "bg-red-50 text-red-700"
-                  : "bg-emerald-50 text-emerald-700"
-              }`}
-            >
-              {hasHallucinations ? (
-                <CircleX className="h-4 w-4" />
-              ) : (
-                <CheckCircle2 className="h-4 w-4" />
-              )}
-              {hasHallucinations ? "Hallucinations found" : "No hallucinations found"}
-            </li>
-
-            <li
-              className={`flex items-center gap-2 rounded-lg px-2 py-1 ${
-                hasToneIssues
-                  ? "bg-amber-50 text-amber-700"
-                  : "bg-emerald-50 text-emerald-700"
-              }`}
-            >
-              {hasToneIssues ? (
-                <AlertTriangle className="h-4 w-4" />
-              ) : (
-                <CheckCircle2 className="h-4 w-4" />
-              )}
-              {hasToneIssues ? "Tone issues" : "Tone aligned"}
-            </li>
-
-            <li
-              className={`flex items-center gap-2 rounded-lg px-2 py-1 ${
-                hasAlignmentIssues
-                  ? "bg-amber-50 text-amber-700"
-                  : "bg-emerald-50 text-emerald-700"
-              }`}
-            >
-              {hasAlignmentIssues ? (
-                <AlertTriangle className="h-4 w-4" />
-              ) : (
-                <CheckCircle2 className="h-4 w-4" />
-              )}
-              {hasAlignmentIssues ? "Value alignment issues" : "Value alignment"}
-            </li>
-          </ul>
-
-          {issues.length > 0 && (
-            <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-slate-600">
-              {issues.map((issue, index) => (
-                <li key={`issue-${index}`}>{issue}</li>
-              ))}
-            </ul>
-          )}
-        </div>
-
-        <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-4">
-          <h5 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-slate-700">
-            <Wrench className="h-4 w-4" />
-            Suggested Fixes
-          </h5>
-
-          {fixes.length === 0 ? (
-            <p className="text-sm text-slate-600">No fixes required.</p>
-          ) : (
-            <ul className="list-disc space-y-1 pl-5 text-sm text-slate-700">
-              {fixes.map((fix, index) => (
-                <li key={`fix-${index}`}>{fix}</li>
-              ))}
-            </ul>
-          )}
-
-          <div className="mt-4 rounded-lg border border-slate-200 bg-white p-3">
-            <p className="mb-1 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
-              <Sparkles className="h-4 w-4" />
-              Regeneration
-            </p>
-
-            <span
-              className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${
-                regenerated
-                  ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
-                  : "bg-slate-100 text-slate-600 ring-1 ring-slate-200"
-              }`}
-            >
-              <RefreshCcw className={`h-3.5 w-3.5 ${regenerated ? "animate-pulse" : ""}`} />
-              {regenerated
-                ? "Regenerated after correction"
-                : "No regeneration needed"}
-            </span>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {checks.map(({ label, failed, failLabel, passLabel }) => (
+              <div
+                key={label}
+                style={{
+                  display: "flex", alignItems: "center", justifyContent: "space-between",
+                  padding: "10px 12px", borderRadius: "var(--radius-sm)",
+                  background: failed ? "rgba(251, 113, 133, 0.05)" : "rgba(52, 211, 153, 0.05)",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 8, color: failed ? "var(--accent-rose)" : "var(--accent-emerald)" }}>
+                  {failed ? <CircleX size={14} /> : <CheckCircle2 size={14} />}
+                  <span style={{ fontSize: 13, fontWeight: 600 }}>{label}</span>
+                </div>
+                <span style={{
+                  fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em",
+                  color: failed ? "var(--accent-rose)" : "var(--accent-emerald)"
+                }}>
+                  {failed ? failLabel : passLabel}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
+
+        {/* Fixes */}
+        <div style={{ padding: 16, borderRadius: "var(--radius-md)", border: "1px solid var(--border-subtle)", background: "var(--bg-surface)" }}>
+          <h5 style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-dim)", marginBottom: 14 }}>
+            <Wrench size={13} />
+            Suggested Improvements
+          </h5>
+
+          {fixes.length > 0 ? (
+            <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 10 }}>
+              {fixes.map((fix, idx) => (
+                <li key={idx} style={{ display: "flex", gap: 10, fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.5 }}>
+                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--brand)", marginTop: 6, flexShrink: 0 }} />
+                  <span>{fix}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "2rem 0", textAlign: "center" }}>
+              <Sparkles size={24} style={{ color: "var(--text-dim)", marginBottom: 8 }} />
+              <p style={{ fontSize: 13, color: "var(--text-dim)", margin: 0 }}>No fixes required</p>
+            </div>
+          )}
+        </div>
       </div>
-    </section>
+    </div>
   );
 }
