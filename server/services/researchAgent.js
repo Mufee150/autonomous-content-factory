@@ -1,4 +1,4 @@
-﻿const openai = require("../config/openai");
+const { callGemini } = require("../config/gemini");
 const prompts = require("./promptTemplates");
 const metaSchema = require("../../shared/metaSchema");
 
@@ -110,26 +110,13 @@ function normalizeMetaDocument(candidate) {
 }
 
 async function researchAgent(sourceText) {
-  let completion;
+  let rawText;
   try {
-    completion = await openai.responses.create({
-      model: "gpt-4.1-mini",
-      input: [
-        {
-          role: "system",
-          content: prompts.researchPrompt
-        },
-        {
-          role: "user",
-          content: sourceText
-        }
-      ]
-    });
+    rawText = await callGemini(prompts.researchPrompt, sourceText);
+    rawText = rawText.trim();
   } catch (error) {
     return buildFallbackMetaDocument(sourceText);
   }
-
-  const rawText = (completion.output_text || "").trim();
 
   let parsed;
   try {

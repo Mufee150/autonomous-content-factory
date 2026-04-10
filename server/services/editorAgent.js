@@ -1,4 +1,4 @@
-﻿const openai = require("../config/openai");
+const { callGemini } = require("../config/gemini");
 const prompts = require("./promptTemplates");
 
 function buildFallbackEditorResult(metaDocument, draftContent) {
@@ -77,29 +77,16 @@ function normalizeEditorResult(draftContent, review) {
 }
 
 async function editorAgent(metaDocument, draftContent) {
-  let completion;
+  let rawText;
   try {
-    completion = await openai.responses.create({
-      model: "gpt-4.1-mini",
-      input: [
-        {
-          role: "system",
-          content: prompts.editorPrompt
-        },
-        {
-          role: "user",
-          content: JSON.stringify({
-            fact_sheet: metaDocument,
-            generated_content: draftContent
-          })
-        }
-      ]
-    });
+    rawText = await callGemini(
+      prompts.editorPrompt,
+      JSON.stringify({ fact_sheet: metaDocument, generated_content: draftContent })
+    );
+    rawText = rawText.trim();
   } catch (error) {
     return buildFallbackEditorResult(metaDocument, draftContent);
   }
-
-  const rawText = (completion.output_text || "").trim();
 
   let parsed;
   try {

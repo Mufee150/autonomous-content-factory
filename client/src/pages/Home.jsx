@@ -21,21 +21,21 @@ export default function Home() {
   ];
 
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50">
+    <div className="flex min-h-screen flex-col" style={{background: 'linear-gradient(135deg, #1a1f2e 0%, #16213e 50%, #0f1419 100%)'}}>
       {/* Navigation */}
-      <nav className="border-b border-white/20 bg-white/70 backdrop-blur-lg">
+      <nav className="border-b border-white/10 bg-black/30 backdrop-blur-lg">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-cyan-600">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500">
               <Zap className="h-5 w-5 text-white" strokeWidth={3} />
             </div>
-            <span className="font-bold text-slate-900">Autonomous</span>
+            <span className="font-bold text-white">Content Factory</span>
           </div>
           <Link
             to="/dashboard"
-            className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-600 px-4 py-2 text-sm font-semibold text-white transition-all hover:shadow-lg"
+            className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-2 text-sm font-semibold text-white transition-all hover:shadow-lg"
           >
-            Get Started
+            Open Dashboard
             <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
@@ -44,45 +44,46 @@ export default function Home() {
       {/* Hero Section */}
       <section className="mx-auto flex max-w-7xl flex-col items-center justify-center px-6 py-20 text-center sm:py-32">
         {/* Kicker */}
-        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-200/50 bg-blue-50/50 px-4 py-2 backdrop-blur-sm">
-          <Sparkles className="h-4 w-4 text-blue-600" />
-          <span className="text-sm font-semibold text-blue-700">
-            AI Multi-Agent Platform
+        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-indigo-400/30 bg-indigo-500/10 px-4 py-2 backdrop-blur-sm">
+          <Sparkles className="h-4 w-4 text-indigo-300" />
+          <span className="text-sm font-semibold text-indigo-200">
+            ⚡ GEMINI 1.5 FLASH — AI MULTI-AGENT PIPELINE
           </span>
         </div>
 
         {/* Main Headline */}
         <h1 className="mb-6 text-5xl font-bold leading-tight sm:text-6xl">
-          Turn any document into
-          <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+          Turn one source into a
+          <span className="bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
             {" "}
-            a full campaign
+            full campaign
           </span>
+          <br />
+          in minutes
         </h1>
 
         {/* Subheadline */}
-        <p className="mb-8 max-w-2xl text-lg text-slate-600">
-          Transform source material into blog posts, LinkedIn articles, Twitter
-          threads, and email content with AI-powered research and editorial
-          review—all in minutes.
+        <p className="mb-8 max-w-2xl text-lg text-gray-300">
+          Autonomously generate a Meta Document, blog post, social thread, and email teaser — all validated for tone, consistency, and accuracy by our AI editorial pipeline.
         </p>
 
         {/* CTA Button */}
         <div className="mb-16 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center">
           <Link
             to="/dashboard"
-            className="group relative inline-flex overflow-hidden rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 px-8 py-4 font-semibold text-white shadow-lg transition-all hover:shadow-xl hover:shadow-blue-500/40"
+            className="group relative inline-flex overflow-hidden rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-4 font-semibold text-white shadow-lg transition-all hover:shadow-xl hover:shadow-indigo-500/40"
           >
             <span className="relative flex items-center gap-2">
-              <span>Start Creating</span>
+              <Zap className="h-5 w-5" />
+              <span>Open Dashboard</span>
               <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
             </span>
           </Link>
           <a
             href="#features"
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-300 px-8 py-4 font-semibold text-slate-900 transition-all hover:border-slate-400 hover:bg-slate-50"
+            className="inline-flex items-center gap-2 rounded-xl border border-gray-600 px-8 py-4 font-semibold text-white transition-all hover:border-gray-500 hover:bg-gray-900/50"
           >
-            Learn More
+            View Docs
           </a>
         </div>
 

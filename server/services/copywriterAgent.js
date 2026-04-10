@@ -1,4 +1,4 @@
-﻿const openai = require("../config/openai");
+const { callGemini } = require("../config/gemini");
 const prompts = require("./promptTemplates");
 
 function buildFallbackDraft(metaDocument) {
@@ -92,35 +92,25 @@ function normalizeDraft(candidate) {
 }
 
 async function copywriterAgent(metaDocument) {
-  let completion;
+  let rawText;
   try {
-    completion = await openai.responses.create({
-      model: "gpt-4.1-mini",
-      input: [
-        {
-          role: "system",
-          content: prompts.copywriterPrompt
-        },
-        {
-          role: "user",
-          content: `Fact Sheet:\n${JSON.stringify(metaDocument, null, 2)}`
-        }
-      ]
-    });
+    rawText = await callGemini(
+      prompts.copywriterPrompt,
+      `Fact Sheet:\n${JSON.stringify(metaDocument, null, 2)}`
+    );
+    rawText = rawText.trim();
+    console.log("[CopywriterAgent] Gemini raw response (first 200 chars):", rawText.slice(0, 200));
   } catch (error) {
+    console.error("[CopywriterAgent] Gemini call failed:", error.message);
     return buildFallbackDraft(metaDocument);
   }
-
-  const rawText = (completion.output_text || "").trim();
 
   let parsed;
   try {
     parsed = JSON.parse(rawText);
   } catch (error) {
-    const parseError = new Error("Copywriter Agent returned invalid JSON.");
-    parseError.statusCode = 502;
-    parseError.source = "copywriter-agent";
-    throw parseError;
+    console.error("[CopywriterAgent] JSON parse failed. Raw text:\n", rawText.slice(0, 500));
+    return buildFallbackDraft(metaDocument);
   }
 
   return normalizeDraft(parsed);

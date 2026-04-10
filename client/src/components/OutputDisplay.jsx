@@ -28,14 +28,14 @@ export default function OutputDisplay({ result, error }) {
 
   if (error) {
     return (
-      <section className="rounded-2xl border border-red-200/50 bg-gradient-to-br from-red-50 to-orange-50 p-6 shadow-lg">
+      <section className="rounded-2xl border border-red-500/30 bg-gradient-to-br from-red-900/20 to-orange-900/10 p-6 shadow-lg">
         <div className="mb-4 flex items-center gap-3">
-          <div className="rounded-lg bg-red-100 p-3">
-            <CheckCircle2 className="h-6 w-6 text-red-600" />
+          <div className="rounded-lg bg-red-500/20 p-3">
+            <CheckCircle2 className="h-6 w-6 text-red-400" />
           </div>
-          <h3 className="text-lg font-bold text-slate-900">Generation Failed</h3>
+          <h3 className="text-lg font-bold text-red-200">Generation Failed</h3>
         </div>
-        <p className="rounded-lg border border-red-200 bg-white/60 px-4 py-3 text-sm text-red-700">
+        <p className="rounded-lg border border-red-500/30 bg-slate-900/50 px-4 py-3 text-sm text-red-300">
           {error}
         </p>
       </section>
@@ -63,16 +63,16 @@ export default function OutputDisplay({ result, error }) {
   ];
 
   return (
-    <section className="space-y-6 rounded-2xl border border-white/20 bg-gradient-to-br from-white/80 to-white/60 p-6 shadow-xl backdrop-blur-xl">
+    <section className="space-y-6 rounded-2xl border border-indigo-500/30 bg-gradient-to-br from-indigo-900/20 to-purple-900/10 p-6 shadow-xl backdrop-blur-xl">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-bold text-slate-900">Generated Output</h3>
-          <p className="mt-1 text-sm text-slate-600">
+          <h3 className="text-lg font-bold text-white">Generated Output</h3>
+          <p className="mt-1 text-sm text-gray-300">
             Review and manage your generated content
           </p>
         </div>
         {copiedLabel && (
-          <div className="animate-fade-in rounded-lg bg-emerald-100 px-4 py-2 text-sm font-semibold text-emerald-700">
+          <div className="animate-fade-in rounded-lg bg-emerald-500/20 px-4 py-2 text-sm font-semibold text-emerald-300">
             {copiedLabel} copied
           </div>
         )}

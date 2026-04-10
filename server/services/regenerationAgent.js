@@ -1,4 +1,4 @@
-const openai = require("../config/openai");
+const { callGemini } = require("../config/gemini");
 const prompts = require("./promptTemplates");
 
 function normalizeContent(candidate, originalContent) {
@@ -26,29 +26,16 @@ function normalizeContent(candidate, originalContent) {
 }
 
 async function regenerationAgent(editorOutput, originalContent) {
-  let completion;
+  let rawText;
   try {
-    completion = await openai.responses.create({
-      model: "gpt-4.1-mini",
-      input: [
-        {
-          role: "system",
-          content: prompts.regenerationPrompt
-        },
-        {
-          role: "user",
-          content: JSON.stringify({
-            EDITOR_OUTPUT: editorOutput,
-            CONTENT: originalContent
-          })
-        }
-      ]
-    });
+    rawText = await callGemini(
+      prompts.regenerationPrompt,
+      JSON.stringify({ EDITOR_OUTPUT: editorOutput, CONTENT: originalContent })
+    );
+    rawText = rawText.trim();
   } catch (error) {
     return originalContent;
   }
-
-  const rawText = (completion.output_text || "").trim();
 
   let parsed;
   try {
