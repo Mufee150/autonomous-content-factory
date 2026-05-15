@@ -16,7 +16,7 @@ function buildFallbackEditorResult(metaDocument, draftContent) {
     tone_issues: [],
     missing_alignment: [],
     suggested_fixes: [
-      "Generated in local fallback mode because OpenAI service was unavailable.",
+      "Generated in local fallback mode because Gemini API was unavailable.",
       ...riskyClaims
     ]
   };

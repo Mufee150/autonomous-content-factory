@@ -5,8 +5,9 @@ import AgentStatus from "../components/AgentStatus";
 import ActivityFeed from "../components/ActivityFeed";
 import HistoryPanel from "../components/HistoryPanel";
 import OutputDisplay from "../components/OutputDisplay";
-import useAgentFlow from "../hooks/useAgentFlow";
+import { useAppContext } from "../context/AppContext";
 import { Zap, ArrowLeft } from "lucide-react";
+
 
 export default function Dashboard() {
   const {
@@ -18,7 +19,8 @@ export default function Dashboard() {
     agentStates,
     runPipeline,
     selectHistoryItem
-  } = useAgentFlow();
+  } = useAppContext();
+
   const isLoading = status === "researching" || status === "generating";
 
   return (

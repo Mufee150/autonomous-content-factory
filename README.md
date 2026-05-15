@@ -6,201 +6,47 @@ An AI-powered multi-agent system that transforms a single source document into a
 
 ## 💡 Problem
 
-Marketing teams face several challenges:
-
-* 🔁 Repetitive rewriting of the same content across platforms
-* 😓 Creative burnout
-* ⚠️ Inconsistent messaging and tone
-* 🐞 Human errors and hallucinated information
-* ⏳ Slow campaign rollout
-
----
+Every product launch requires Marketing to rewrite the same content for blog, LinkedIn, and newsletter separately. Repetitive rewriting causes burnout, factual errors, and tonal inconsistencies across channels.
 
 ## 🧠 Solution
 
-This project introduces a **multi-agent pipeline** powered by a structured **Meta Document** as a single source of truth.
+A **4-agent AI pipeline** that takes one source document, extracts verified facts into a structured Meta Document, then generates consistent content across 5 formats — all validated for accuracy by an AI editor.
 
-Instead of generating content directly, the system:
-
-1. Extracts structured knowledge from raw input (Research Agent)
-2. Uses it as a **single source of truth** (Meta Document)
-3. Generates consistent content across platforms (Copywriter Agent)
-4. Validates outputs for accuracy and tone (Editor Agent)
-5. Automatically regenerates rejected content (Regeneration Agent)
-6. Caches requests to avoid duplicate API calls
-
----
-
-## ⚙️ Architecture
-
-```text
-User Input (source text)
-   ↓
-Research Agent → Extracts facts → Meta Document (JSON)
-   ↓
-Copywriter Agent → Blog + Twitter + LinkedIn + Email
-   ↓
-Editor Agent → Validates accuracy, tone, hallucinations
-   ↓
-[If REJECTED] → Regeneration Agent → Re-validates
-   ↓
-Final Multi-Format Output (APPROVED)
+```
+Source Text → Research Agent → Meta Document → Copywriter Agent → 5 Formats
+                                                      ↓
+                                              Editor Agent (validates)
+                                                      ↓
+                                 [If rejected] → Regeneration Agent → Re-validates
 ```
 
 ---
 
-## 🤖 Agents
-
-### 🧠 Research Agent
-Converts raw input → Meta Document with structured information.
-
-**Extracts:**
-- Product name, target audience
-- Key features, value proposition
-- Tone of voice, supporting points
-- Risks/ambiguities, missing information
-
-**Fallback:** Smart NLP-based extraction from natural text when API is unavailable.
-
----
-
-### ✍️ Copywriter Agent
-Generates 5 content formats from the Meta Document.
-
-**Outputs:**
-- 400-500 word Blog Post
-- 5-tweet Twitter Thread
-- LinkedIn Post
-- Email Subject Line
-- Email Teaser Copy
-
-**Fallback:** Professional template-based generation using extracted metadata.
-
----
-
-### ✅ Editor Agent
-Validates generated content against the source Meta Document.
-
-**Checks:**
-- Hallucination detection (facts not in source)
-- Tone consistency across platforms
-- Value proposition alignment
-- Risk handling (ambiguous points not stated as facts)
-
-**Actions:**
-- **APPROVED**: Content is ready to publish
-- **REJECTED**: Flags issues → triggers Regeneration Agent
-
----
-
-### 🔁 Regeneration Agent
-Regenerates rejected content based on editor feedback.
-
-**Features:**
-- Uses editor feedback to fix specific issues
-- Preserves correct sections, only fixes flagged problems
-- Re-validated by Editor Agent after regeneration
-
----
-
-## 🧩 Tech Stack
-
-| Component | Technology | Purpose |
-|-----------|-----------|---------|
-| **Frontend** | React 18 + Vite | Premium dark-themed dashboard UI |
-| **Styling** | Tailwind CSS v4 + Custom CSS | Glassmorphism design system |
-| **Backend** | Node.js + Express.js | REST API server |
-| **AI Model** | Google Gemini 2.0 Flash | Content generation & validation |
-| **Icons** | Lucide React | Modern icon set |
-| **Routing** | React Router v6 | Client-side navigation |
-
----
-
-## 📁 Project Structure
-
-```
-autonomous-content-factory/
-├── client/                          # React frontend (Vite)
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── Navbar.jsx           # Navigation bar (4 links)
-│   │   │   ├── UploadBox.jsx        # Source text input
-│   │   │   ├── AgentStatus.jsx      # 3-agent pipeline status
-│   │   │   ├── ActivityFeed.jsx     # Live pipeline activity log
-│   │   │   ├── OutputDisplay.jsx    # 6-tab content viewer
-│   │   │   ├── AIAuditCard.jsx      # Editor validation report
-│   │   │   └── HistoryPanel.jsx     # Run history list
-│   │   ├── pages/
-│   │   │   ├── Home.jsx             # Landing page with hero section
-│   │   │   ├── Dashboard.jsx        # Pipeline page (main workspace)
-│   │   │   ├── History.jsx          # Generation history
-│   │   │   └── Analytics.jsx        # Session analytics & stats
-│   │   ├── context/
-│   │   │   └── AppContext.jsx       # Global state management
-│   │   ├── hooks/
-│   │   │   └── useAgentFlow.js      # Pipeline orchestration hook
-│   │   ├── services/
-│   │   │   └── api.js               # API client (retry + error handling)
-│   │   ├── styles/
-│   │   │   └── index.css            # Design system (CSS custom properties)
-│   │   ├── App.jsx                  # Router setup
-│   │   └── main.jsx                 # Entry point
-│   ├── index.html
-│   ├── vite.config.js
-│   ├── tailwind.config.js
-│   └── package.json
-│
-├── server/                          # Node.js backend
-│   ├── controllers/
-│   │   └── contentController.js     # Route handlers (analyze, generate, create-content)
-│   ├── services/
-│   │   ├── researchAgent.js         # Meta document extraction
-│   │   ├── copywriterAgent.js       # Multi-format content generation
-│   │   ├── editorAgent.js           # Content validation & audit
-│   │   ├── regenerationAgent.js     # Rejected content regeneration
-│   │   ├── apiHandler.js            # Gemini API orchestration + retry
-│   │   ├── cacheService.js          # In-memory request caching
-│   │   └── promptTemplates.js       # AI prompt templates
-│   ├── middleware/
-│   │   ├── requestLogger.js         # HTTP request logging
-│   │   └── errorHandler.js          # Global error handler
-│   ├── routes/
-│   │   └── contentRoutes.js         # API route definitions
-│   ├── app.js                       # Express app setup
-│   ├── server.js                    # Server entry point
-│   └── package.json
-│
-├── shared/                          # Shared schemas
-│   └── metaSchema.js                # Meta Document JSON schema
-│
-├── .env                             # Environment variables
-├── .gitignore
-├── package.json                     # Root package (workspaces)
-├── sample_input.txt                 # Example source text
-├── README.md                        # This file
-└── APPROACH.md                      # Solution approach document
-```
-
----
-
-## 🚀 Getting Started
+## 🚀 Setup & Run Locally (Step-by-Step)
 
 ### Prerequisites
-- Node.js 18+
-- Google Gemini API key (get one at [aistudio.google.com/apikey](https://aistudio.google.com/apikey))
 
-### Installation
+- **Node.js** 18 or higher — [download here](https://nodejs.org/)
+- **Google Gemini API Key** — get one free at [aistudio.google.com/apikey](https://aistudio.google.com/apikey)
+
+### Step 1: Clone the Repository
 
 ```bash
-# Clone and install
 git clone https://github.com/Mufee150/autonomous-content-factory.git
 cd autonomous-content-factory
+```
+
+### Step 2: Install Dependencies
+
+```bash
 npm install
 ```
 
-### Configuration
+This installs all dependencies for both `client/` and `server/` workspaces automatically (npm workspaces).
 
-Create a `.env` file in the project root:
+### Step 3: Configure Environment
+
+Create a `.env` file in the **project root**:
 
 ```env
 GEMINI_API_KEY=your_gemini_api_key_here
@@ -208,15 +54,38 @@ PORT=5000
 CLIENT_URL=http://localhost:5173
 ```
 
-### Run Development Servers
+> **Note:** Replace `your_gemini_api_key_here` with your actual Gemini API key.
+
+### Step 4: Start the Application
 
 ```bash
 npm run dev
 ```
 
-This starts:
-- **Backend**: http://localhost:5000 (Express)
-- **Frontend**: http://localhost:5173 (Vite + React)
+This starts **both servers** simultaneously:
+- **Backend:** http://localhost:5000 (Express API)
+- **Frontend:** http://localhost:5173 (Vite + React)
+
+### Step 5: Use the Application
+
+1. Open **http://localhost:5173** in your browser
+2. Click **"Open Pipeline"** from the homepage
+3. Paste any product description / source text into the text area
+4. Click **"Generate Content"**
+5. Watch the 3 agents process in real-time (Research → Copywriter → Editor)
+6. View generated content across 6 tabs: Meta, Blog, LinkedIn, Twitter, Email, Audit Report
+7. Copy any output with one click
+
+---
+
+## 🤖 Agents
+
+| Agent | Input | Output | Purpose |
+|-------|-------|--------|---------|
+| **Research** | Raw source text | Meta Document (JSON) | Extracts facts, features, audience, tone. Flags ambiguities. |
+| **Copywriter** | Meta Document | 5 content formats | Blog (500w), Twitter thread (5 tweets), LinkedIn, Email subject + teaser |
+| **Editor** | Meta Document + Content | APPROVED / REJECTED | Hallucination detection, tone audit, value alignment check |
+| **Regeneration** | Editor feedback + Content | Fixed content | Regenerates only the problematic sections |
 
 ---
 
@@ -224,119 +93,64 @@ This starts:
 
 | Page | Route | Description |
 |------|-------|-------------|
-| **Home** | `/` | Landing page with hero section, agent cards, output chips |
-| **Pipeline** | `/dashboard` | Main workspace — input, agent status, live feed, output viewer |
-| **History** | `/history` | List of all generation runs with approval status |
+| **Home** | `/` | Landing page — hero section, agent showcase, output format chips |
+| **Pipeline** | `/dashboard` | Main workspace — input, agent status, live activity feed, output viewer |
+| **History** | `/history` | All generation runs with approval/rejection badges |
 | **Analytics** | `/analytics` | Session stats — approval rate, word count, output breakdown |
 
 ---
 
 ## 🔌 API Endpoints
 
-### GET /health
-Server health check → `{ "ok": true }`
-
-### POST /analyze
-Converts source text into a structured Meta Document.
-
-```json
-// Request
-{ "source_text": "Your product description here..." }
-
-// Response
-{
-  "success": true,
-  "data": {
-    "product_name": "TechFlow Pro",
-    "target_audience": "Development teams",
-    "key_features": ["AI deadline prediction", "Auto task assignment"],
-    "value_proposition": "Streamlines project management with AI",
-    "tone_detected": "Professional, technical yet accessible"
-  }
-}
-```
-
-### POST /generate
-Generates 5 content formats from a Meta Document + validates with Editor Agent.
-
-```json
-// Request
-{ "meta_document": { ... } }
-
-// Response
-{
-  "success": true,
-  "data": {
-    "blog_post": "...",
-    "linkedin_post": "...",
-    "twitter_thread": ["Tweet 1", "Tweet 2", "Tweet 3", "Tweet 4", "Tweet 5"],
-    "email_subject": "...",
-    "email_teaser": "...",
-    "editor_review": {
-      "status": "APPROVED",
-      "hallucinations_found": [],
-      "tone_issues": [],
-      "suggested_fixes": []
-    }
-  }
-}
-```
-
-### POST /create-content
-Complete pipeline in one call (Research → Copywrite → Validate).
-
-```json
-// Request
-{ "source_text": "Your product description here..." }
-
-// Response
-{
-  "success": true,
-  "data": {
-    "meta_document": { ... },
-    "content": { ... }
-  }
-}
-```
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/health` | Server health check |
+| `POST` | `/analyze` | Source text → Meta Document |
+| `POST` | `/generate` | Meta Document → 5 content formats + validation |
+| `POST` | `/create-content` | Full pipeline in one call (analyze + generate + validate) |
 
 ---
 
-## 🔄 Reliability Features
+## 🧩 Tech Stack
 
-### Retry Logic
-Each API call uses exponential backoff with jitter:
-```
-Attempt 1 → immediate
-Attempt 2 → wait ~1s
-Attempt 3 → wait ~2s
-If all fail → fallback to template-based generation
-```
-
-### Smart Fallbacks
-When the Gemini API is unavailable (rate limits, quota exhausted, network issues), each agent has a built-in fallback:
-
-| Agent | Fallback Strategy |
-|-------|------------------|
-| Research | Smart NLP extraction from natural text |
-| Copywriter | Professional template-based content |
-| Editor | Static validation based on metadata risks |
-| Regeneration | Returns original content |
-
-### In-Memory Caching
-- Research calls cached for 5 minutes
-- Copywrite + Editor calls cached for 10 minutes
-- MD5-based cache keys prevent duplicate API calls
+| Component | Technology |
+|-----------|-----------|
+| Frontend | React 18, Vite 5 |
+| Styling | Tailwind CSS v4 + CSS Custom Properties |
+| Routing | React Router v6 |
+| Icons | Lucide React |
+| Backend | Node.js, Express.js |
+| AI Model | Google Gemini 2.0 Flash |
+| AI SDK | @google/generative-ai |
+| Caching | In-memory with TTL (MD5 keys) |
+| Monorepo | npm Workspaces |
 
 ---
 
-## 🔐 Environment Variables
+## 📁 Project Structure
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `GEMINI_API_KEY` | ✅ Yes | Google Gemini API key |
-| `PORT` | No | Server port (default: 5000) |
-| `CLIENT_URL` | No | Frontend URL for CORS (default: http://localhost:5173) |
-| `DEBUG` | No | Enable debug logging (default: false) |
+```
+autonomous-content-factory/
+├── client/                      # React frontend
+│   ├── src/
+│   │   ├── components/          # UI components (Navbar, UploadBox, AgentStatus, etc.)
+│   │   ├── pages/               # Home, Dashboard, History, Analytics
+│   │   ├── context/             # Global state (AppContext)
+│   │   ├── hooks/               # Pipeline orchestration (useAgentFlow)
+│   │   ├── services/            # API client with retry logic
+│   │   └── styles/              # Design system (CSS custom properties)
+│   └── package.json
+├── server/                      # Express backend
+│   ├── controllers/             # Route handlers
+│   ├── services/                # AI agents + API handler + cache
+│   ├── middleware/               # Logger, error handler
+│   ├── routes/                  # API routes
+│   └── package.json
+├── shared/                      # Meta Document schema
+├── .env                         # API key config
+├── APPROACH.md                  # Solution approach document
+└── README.md                    # This file
+```
 
 ---
 
@@ -344,8 +158,6 @@ When the Gemini API is unavailable (rate limits, quota exhausted, network issues
 
 MIT License
 
----
-
 ## 💬 Author
 
-Built by **Mufeedha Aliyar** ✨
+Built by **Mufeedha Aliyar**

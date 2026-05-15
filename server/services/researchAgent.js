@@ -1,5 +1,4 @@
 const { makeAPICall, logger } = require("./apiHandler");
-const { cacheResearchCall } = require("./cacheService");
 const prompts = require("./promptTemplates");
 const metaSchema = require("../../shared/metaSchema");
 
@@ -185,36 +184,28 @@ function normalizeMetaDocument(candidate) {
 async function researchAgent(sourceText) {
   logger.info("ResearchAgent", "Processing source text...");
 
-  const { data: cachedData, fromCache } = await cacheResearchCall(sourceText, async () => {
-    // Try API first
-    const prompt = `${prompts.researchPrompt}\n\nSource Content:\n${sourceText}`;
-    const apiResult = await makeAPICall(prompt, {
-      responseMimeType: "application/json",
-      tag: "ResearchAgent",
-    });
-
-    if (apiResult.success) {
-      logger.success("ResearchAgent", `API call succeeded using ${apiResult.apiUsed}`);
-      try {
-        const parsed = JSON.parse(apiResult.data);
-        const normalized = normalizeMetaDocument(parsed);
-        return { ...metaSchema, ...normalized };
-      } catch (parseErr) {
-        logger.warn("ResearchAgent", `JSON parse failed: ${parseErr.message}, using fallback`);
-      }
-    } else {
-      logger.warn("ResearchAgent", `API failed: ${apiResult.error?.message}, using smart fallback`);
-    }
-
-    // Smart fallback: extract info from natural text
-    return buildFallbackMetaDocument(sourceText);
+  // Try API first
+  const prompt = `${prompts.researchPrompt}\n\nSource Content:\n${sourceText}`;
+  const apiResult = await makeAPICall(prompt, {
+    responseMimeType: "application/json",
+    tag: "ResearchAgent",
   });
 
-  if (fromCache) {
-    logger.success("ResearchAgent", "Result retrieved from cache");
+  if (apiResult.success) {
+    logger.success("ResearchAgent", `API call succeeded using ${apiResult.apiUsed}`);
+    try {
+      const parsed = JSON.parse(apiResult.data);
+      const normalized = normalizeMetaDocument(parsed);
+      return { ...metaSchema, ...normalized };
+    } catch (parseErr) {
+      logger.warn("ResearchAgent", `JSON parse failed: ${parseErr.message}, using fallback`);
+    }
+  } else {
+    logger.warn("ResearchAgent", `API failed: ${apiResult.error?.message}, using smart fallback`);
   }
 
-  return cachedData;
+  // Smart fallback: extract info from natural text
+  return buildFallbackMetaDocument(sourceText);
 }
 
 module.exports = researchAgent;
