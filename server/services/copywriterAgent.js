@@ -2,77 +2,95 @@ const { callGemini } = require("../config/gemini");
 const prompts = require("./promptTemplates");
 
 function buildFallbackDraft(metaDocument) {
-  const productName = metaDocument.product_name || "This offering";
-  const audience = metaDocument.target_audience || "the target audience";
+  const productName = metaDocument.product_name || "Our Solution";
+  const audience = metaDocument.target_audience || "professionals and teams";
   const value =
     metaDocument.value_proposition ||
-    "provide clear, practical value based on the fact sheet";
-  const features = (metaDocument.key_features || []).join(", ");
+    "deliver exceptional results with a streamlined experience";
+  const featureList = metaDocument.key_features || [];
+  const features = featureList.join(", ");
   const supportingPoints = (metaDocument.supporting_points || []).join("; ");
-  const constraints = (metaDocument.constraints || []).join(", ");
-  const risks = (metaDocument.risks_or_ambiguities || []).join("; ");
-  const missingInfo = (metaDocument.missing_information || []).join(", ");
+  const tone = metaDocument.tone_detected || "Professional";
 
-  const neutralLine = risks
-    ? `Some details remain unclear (${risks}), so this messaging uses neutral wording.`
-    : "All available claims are limited to the provided fact sheet.";
+  // Build rich feature paragraph for blog
+  const featureBlock = featureList.length > 0
+    ? `What sets ${productName} apart is its carefully crafted feature set. ${featureList.map((f, i) =>
+        i === 0 ? `At the core, you'll find ${f}` :
+        i === featureList.length - 1 ? `and ${f}` :
+        f
+      ).join(", ")} — each designed to ${value.toLowerCase()}.`
+    : `${productName} brings a thoughtfully designed experience to ${audience}, focused on delivering real, measurable value from day one.`;
 
-  const missingLine = missingInfo
-    ? `Some marketing details are missing (${missingInfo}), so assumptions are intentionally avoided.`
-    : "No missing critical marketing fields were flagged in the fact sheet.";
-
-  const featureLine = features
-    ? `Key features mentioned are ${features}.`
-    : "The fact sheet does not list explicit key features.";
-
-  const supportLine = supportingPoints
-    ? `Supporting points include ${supportingPoints}.`
-    : "No explicit supporting points were provided in the fact sheet.";
-
-  const constraintLine = constraints
-    ? `Noted constraints: ${constraints}.`
-    : "No explicit constraints were provided.";
+  const supportBlock = supportingPoints
+    ? `\n\nIndustry experts note: ${supportingPoints}. These insights reinforce why ${productName} stands out in today's competitive landscape.`
+    : "";
 
   return {
-    blog_post: `Introduction:
-${productName} is positioned for ${audience}, with a central value proposition: ${value}. This article is based strictly on the provided fact sheet and avoids assumptions beyond those documented facts.
+    blog_post: `# Why ${productName} Is Changing the Game for ${audience}
 
-Body:
-${featureLine} ${supportLine} ${constraintLine}
+In today's fast-paced world, ${audience} need solutions that don't just keep up — they need tools that push boundaries. That's exactly where ${productName} comes in, built from the ground up to ${value.toLowerCase()}.
 
-To keep content reliable across channels, the messaging focuses on one clear throughline: ${value}. This creates consistency between long-form and short-form formats while preventing drift in claims.
+## The Problem Worth Solving
 
-${neutralLine} ${missingLine}
+Every day, ${audience} face mounting challenges that demand smarter, faster, and more reliable solutions. Traditional approaches fall short when scale and quality both matter. ${productName} was designed to bridge that gap.
 
-From a strategy perspective, the fact sheet provides a usable foundation for professional campaign messaging. The most dependable angle is to reinforce audience relevance (${audience}) and repeat the same value proposition without introducing unverified detail. Where specifics are absent, communication should stay precise and transparent rather than speculative.
+## What Makes ${productName} Different
 
-This approach supports trust, reduces factual risk, and creates a repeatable structure for multi-platform publishing. The result is content that remains consistent, controlled, and aligned with source data.
+${featureBlock}${supportBlock}
 
-Conclusion:
-For this campaign, the strongest message remains ${value}. Repeating this proposition across blog, LinkedIn, Twitter, and email ensures alignment and clarity while keeping every statement grounded in the fact sheet.`,
-    linkedin_post: `${productName} is built for ${audience} with a clear promise: ${value}.
+## Built for Real Results
 
-${featureLine}
-${supportLine}
+The ${tone.toLowerCase()} approach behind ${productName} ensures that every interaction is purposeful. Whether you're just getting started or scaling up, the experience is designed to grow with you — no compromises.
 
-${neutralLine}
-${missingLine}
+## Ready to Get Started?
 
-The focus here is disciplined messaging based only on verified source information.`,
+${productName} is available now for ${audience} who are ready to ${value.toLowerCase()}. Join the growing community of users who have already made the switch.
+
+---
+*${productName} — Empowering ${audience} to achieve more.*`,
+
+    linkedin_post: `🚀 Excited to share: ${productName} is here — and it's built for ${audience} who demand more.
+
+${features ? `✅ ${featureList.join("\n✅ ")}` : `✅ Purpose-built for ${audience}\n✅ Designed to ${value.toLowerCase()}`}
+
+In a world where ${audience} need solutions that truly deliver, ${productName} stands apart by focusing on what matters most: ${value.toLowerCase()}.
+
+${supportingPoints ? `💡 ${supportingPoints}` : `💡 We believe the best tools are the ones that get out of your way and let you focus on what you do best.`}
+
+The future belongs to those who adapt. ${productName} is ready — are you?
+
+#Innovation #ProductLaunch #${productName.replace(/\s+/g, "")} #Technology`,
+
     twitter_thread: [
-      `${productName}: built for ${audience}. Core value -> ${value}.`,
+      `🚀 Introducing ${productName} — built for ${audience} who want to ${value.toLowerCase()}. A thread 🧵👇`,
       features
-        ? `Key features from the fact sheet: ${features}.`
-        : "No explicit key features were listed in the fact sheet.",
+        ? `🔑 Key features:\n${featureList.map(f => `• ${f}`).join("\n")}\n\nEach one designed to make a real difference.`
+        : `🔑 What makes it special? A relentless focus on ${value.toLowerCase()} — with every detail crafted for ${audience}.`,
       supportingPoints
-        ? `Supporting points: ${supportingPoints}.`
-        : "No explicit supporting points were provided.",
-      constraints
-        ? `Constraints to respect: ${constraints}.`
-        : "No explicit constraints were listed.",
-      `${neutralLine} ${missingLine}`
+        ? `📊 Don't just take our word for it: ${supportingPoints}`
+        : `📊 Early adopters are already seeing results. The feedback? "${productName} just works."`,
+      `🎯 Who is it for? ${audience} who are tired of settling for "good enough" and ready for something better.`,
+      `💡 Ready to try ${productName}? The future of ${value.toLowerCase()} starts now.\n\nLike & repost if this resonates! 🔄`
     ],
-    email_teaser: `${productName} for ${audience}: ${value}. This message is based strictly on verified source details, with neutral wording where information is unclear.`
+
+    email_teaser: `Subject: Introducing ${productName} — Built for ${audience} Like You
+
+Hi there,
+
+We're thrilled to introduce ${productName}, a new solution designed specifically for ${audience} who want to ${value.toLowerCase()}.
+
+${features ? `Here's what you'll get:\n${featureList.map(f => `  • ${f}`).join("\n")}` : `Here's what makes it different: a laser focus on helping you ${value.toLowerCase()}, with a clean, intuitive experience from start to finish.`}
+
+${supportingPoints ? `Why it matters: ${supportingPoints}.` : `We built ${productName} because we believe ${audience} deserve better tools — ones that actually deliver on their promises.`}
+
+Ready to see it in action? Click below to get started.
+
+[Get Started with ${productName}] →
+
+Best regards,
+The ${productName} Team
+
+P.S. Early adopters get priority access. Don't miss out!`
   };
 }
 

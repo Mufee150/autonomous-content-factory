@@ -1,10 +1,10 @@
-﻿module.exports = {
+module.exports = {
   researchPrompt: `You are a senior product analyst and fact verification expert.
 
 Analyze the input content and extract a structured Source of Truth.
 
 Return only STRICT valid JSON with these exact keys:
-- product_name (string)
+- product_name (string — ONLY the brand/product name, e.g. "Codepro" or "TechFlow Pro". Do NOT include a description or full sentence)
 - target_audience (string)
 - key_features (array of strings)
 - value_proposition (string)

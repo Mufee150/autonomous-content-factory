@@ -40,7 +40,7 @@ export function AppProvider({ children }) {
     try {
       // Step 1 — Research
       const analyzeRes = await api.post("/analyze", { source_text: sourceText });
-      const metaDocument = analyzeRes.data;
+      const metaDocument = analyzeRes.data.data || analyzeRes.data;
       addFeed(`Research complete. Product: "${metaDocument.product_name || "Unknown"}"`, { agent: "Research", type: "success" });
       setAgentStates({ research: "completed", copywriter: "thinking", editor: "idle" });
 
@@ -53,7 +53,7 @@ export function AppProvider({ children }) {
       addFeed("Sending fact sheet to Copywriter Agent...", { agent: "Copywriter", type: "normal" });
 
       const generateRes = await api.post("/generate", { meta_document: metaDocument });
-      const content = generateRes.data;
+      const content = generateRes.data.data || generateRes.data;
       const review = content.editor_review || {};
 
       addFeed("Blog, LinkedIn, Twitter & Email content generated.", { agent: "Copywriter", type: "success" });

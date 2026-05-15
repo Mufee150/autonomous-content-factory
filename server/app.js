@@ -9,6 +9,8 @@ const app = express();
 // Allow both local dev and deployed frontend origins
 const allowedOrigins = [
   "http://localhost:5173",
+  "http://localhost:5174",
+  "http://localhost:5175",
   process.env.CLIENT_URL
 ].filter(Boolean);
 

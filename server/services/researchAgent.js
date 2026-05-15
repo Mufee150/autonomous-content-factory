@@ -8,12 +8,18 @@ function extractProductName(text) {
   const explicit = text.match(/(?:product|app|tool|platform|software|service)\s*(?:name)?[:\-–]\s*([^\n,.]+)/i);
   if (explicit) return explicit[1].trim();
 
-  // Try to find a capitalized product name (e.g. "TechFlow Pro")
+  // Try a standalone capitalized single word that looks like a brand name (e.g. "Codepro", "TechFlow")
+  const singleBrand = text.match(/\b([A-Z][a-zA-Z]{2,}(?:[A-Z][a-zA-Z]*)?)\b/);
+  if (singleBrand) {
+    const skipWords = ["The", "This", "Our", "We", "It", "In", "At", "For", "With", "From", "By", "Why", "How", "What"];
+    if (!skipWords.includes(singleBrand[1])) return singleBrand[1].trim();
+  }
+
+  // Try to find a multi-word capitalized product name (e.g. "TechFlow Pro")
   const capitalizedName = text.match(/\b([A-Z][a-zA-Z]*(?:\s+[A-Z][a-zA-Z]*)+)\b/);
   if (capitalizedName) {
     const name = capitalizedName[1].trim();
-    // Filter out common sentence starters
-    const skipWords = ["The", "This", "Our", "We", "It", "In", "At", "For", "With", "From", "By"];
+    const skipWords = ["The", "This", "Our", "We", "It", "In", "At", "For", "With", "From", "By", "Why", "How", "What"];
     if (!skipWords.includes(name.split(" ")[0])) return name;
   }
 
@@ -21,9 +27,9 @@ function extractProductName(text) {
   const quoted = text.match(/["']([^"']{2,40})["']/);
   if (quoted) return quoted[1].trim();
 
-  // Use first sentence subject
-  const firstSentence = text.split(/[.!?\n]/)[0]?.trim() || "";
-  if (firstSentence.length < 60) return firstSentence;
+  // Use only the very first word of the first sentence as a last resort
+  const firstWord = text.trim().split(/[\s,.(]/)[0];
+  if (firstWord && firstWord.length >= 2 && firstWord.length <= 40) return firstWord;
 
   return "Product";
 }
@@ -156,9 +162,28 @@ function buildFallbackMetaDocument(sourceText) {
   };
 }
 
+/**
+ * Sanitize a raw product_name value: if it looks like a full sentence
+ * (contains common verbs or is more than 4 words), extract only the first
+ * capitalized token so we don't embed whole sentences as the product name.
+ */
+function sanitizeProductName(raw) {
+  const name = String(raw || "").trim();
+  const words = name.split(/\s+/);
+  // If it's already short (≤4 words), trust it
+  if (words.length <= 4) return name.substring(0, 200);
+
+  // Looks like a sentence — extract the first meaningful capitalized token
+  const brandToken = name.match(/\b([A-Z][a-zA-Z]{2,})\b/);
+  if (brandToken) return brandToken[1];
+
+  // Fallback: return first word
+  return words[0];
+}
+
 function normalizeMetaDocument(candidate) {
   return {
-    product_name: String(candidate.product_name || "").substring(0, 200),
+    product_name: sanitizeProductName(candidate.product_name),
     target_audience: String(candidate.target_audience || "").substring(0, 200),
     key_features: Array.isArray(candidate.key_features)
       ? candidate.key_features.filter((item) => typeof item === "string").slice(0, 10)
